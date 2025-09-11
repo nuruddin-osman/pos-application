@@ -9,6 +9,7 @@ import {
   FaTimes,
   FaSignOutAlt,
   FaHospitalSymbol,
+  FaUserCog,
 } from "react-icons/fa";
 
 const Sidebar = ({ activePage, setActivePage }) => {
@@ -58,6 +59,13 @@ const Sidebar = ({ activePage, setActivePage }) => {
 
   const handleMenuItemClick = (itemName) => {
     setActivePage(itemName);
+    if (window.innerWidth < 768) {
+      setIsMobileSidebarOpen(false);
+    }
+  };
+
+  const handleAdminProfileClick = () => {
+    setActivePage("অ্যাডমিন প্রোফাইল");
     if (window.innerWidth < 768) {
       setIsMobileSidebarOpen(false);
     }
@@ -146,23 +154,26 @@ const Sidebar = ({ activePage, setActivePage }) => {
 
         {/* User section */}
         <div className="p-4 border-t border-gray-700">
-          <div
-            className={`flex items-center ${
-              !isSidebarOpen && "justify-center"
-            }`}
+          <button
+            onClick={handleAdminProfileClick}
+            className={`w-full flex items-center p-3 rounded-lg transition-colors ${
+              activePage === "অ্যাডমিন প্রোফাইল"
+                ? "bg-gray-700 text-white"
+                : "text-gray-300 hover:bg-gray-800 hover:text-white"
+            } ${!isSidebarOpen && "justify-center"}`}
           >
             <div className="flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="font-bold">A</span>
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                <span className="font-bold text-sm">A</span>
               </div>
             </div>
             {isSidebarOpen && (
-              <div className="ml-3">
+              <div className="ml-3 text-left">
                 <p className="text-sm font-medium">অ্যাডমিন</p>
                 <p className="text-xs text-gray-400">admin@hospital.com</p>
               </div>
             )}
-          </div>
+          </button>
 
           {/* Logout button */}
           <button

@@ -5,6 +5,7 @@ import BillingAndInvoicing from "../pages/billingAndInvoicing/Index";
 import InventoryManagement from "../pages/inventoryManagement/Index";
 import AppoientmentScheduling from "../pages/appoientmentScheduling/Index";
 import Reporting from "../pages/reporting/Index";
+import AdminProfile from "../pages/admin-pannel/Index";
 
 const RootLayout = () => {
   const [activePage, setActivePage] = useState("রোগী ব্যবস্থাপনা");
@@ -21,6 +22,8 @@ const RootLayout = () => {
         return <AppoientmentScheduling />;
       case "রিপোর্টিং":
         return <Reporting />;
+      case "অ্যাডমিন প্রোফাইল":
+        return <AdminProfile />;
       default:
         return <PatientManagement />;
     }
