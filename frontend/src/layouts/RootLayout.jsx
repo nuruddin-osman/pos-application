@@ -39,10 +39,10 @@ const RootLayout = () => {
     <div className="flex h-screen bg-gray-100 font-roboto">
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
       <main className="flex-1 overflow-y-auto md:ml-0">
-        <div className="px-6 pt-2">
-          <div className="flex justify-between items-start md:items-center mb-6 bg-gradient-to-r from-purple-600 to-green-600 shadow-xl px-6 py-3 rounded-xl ">
-            <div className="text-2xl font-bold text-gray-800 font-open-sans">
-              <div className="w-24 h-18 overflow-hidden">
+        <div className="md:px-6 md:pt-2">
+          <div className="flex justify-end md:justify-between items-start md:items-center mb-6 bg-gradient-to-r from-purple-600 to-green-600 shadow-xl px-6 py-3 rounded-xl ">
+            <div className="hidden md:block text-2xl font-bold text-gray-800 font-open-sans">
+              <div className="w-24 h-18 overflow-hidden ">
                 <img
                   className="w-full h-full object-cover"
                   src={Logo}
@@ -53,9 +53,9 @@ const RootLayout = () => {
 
             <div
               onClick={handleAdminProfileClick}
-              className="flex items-center gap-4 px-4 py-2 rounded-lg transition-colors cursor-pointer bg-slate-300"
+              className="flex items-center gap-4 md:px-4 md:py-2 rounded-lg transition-colors cursor-pointer md:bg-slate-300"
             >
-              <div className="w-18 h-18 overflow-hidden rounded-full bg-amber-200">
+              <div className="w-14 h-14 md:w-18 md:h-18 overflow-hidden rounded-full bg-amber-200">
                 <img
                   className="w-full h-full object-cover"
                   src={Avater}

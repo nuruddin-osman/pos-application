@@ -75,10 +75,10 @@ const Sidebar = ({ activePage, setActivePage }) => {
   return (
     <>
       {/* Mobile menu button */}
-      <div className="md:hidden fixed top-4 left-4 z-50">
+      <div className="md:hidden fixed top-5 left-4 z-50">
         <button
           onClick={toggleMobileSidebar}
-          className="p-2 rounded-md bg-blue-600 text-white"
+          className="p-2 rounded-md bg-[#008CBA] text-white text-2xl"
         >
           {isMobileSidebarOpen ? <FaTimes /> : <FaBars />}
         </button>
@@ -107,14 +107,14 @@ const Sidebar = ({ activePage, setActivePage }) => {
           >
             {/* <FaHospitalSymbol className="text-2xl text-blue-400" /> */}
             {isSidebarOpen && (
-              <h1 className="text-xl font-bold ml-2">হাসপাতাল POS</h1>
+              <h1 className="text-xl font-bold ml-11 md:ml-2">হাসপাতাল POS</h1>
             )}
           </div>
 
           {/* Desktop toggle button - hidden on mobile */}
           <button
             onClick={toggleSidebar}
-            className="hidden md:block text-gray-400 hover:text-white"
+            className="hidden md:block text-gray-400 hover:text-white text-2xl"
           >
             {isSidebarOpen ? <FaTimes /> : <FaBars />}
           </button>
