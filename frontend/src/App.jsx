@@ -1,9 +1,6 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router";
-import Home from "./pages/home/Index";
 import RootLayout from "./layouts/RootLayout";
-import Register from "./pages/registration/Index";
-import PatientManagement from "./pages/patient-management/Index";
 
 const App = () => {
   let router = createBrowserRouter([
@@ -13,22 +10,14 @@ const App = () => {
       children: [
         {
           index: true,
-          element: <Home />,
-        },
-        {
-          path: "/register",
-          element: <Register />,
-        },
-        {
-          path: "/patient-management",
-          element: <PatientManagement />,
+          element: <RootLayout />,
         },
       ],
     },
   ]);
   return (
     <>
-      <RouterProvider router={router} />,
+      <RouterProvider router={router} />
     </>
   );
 };
