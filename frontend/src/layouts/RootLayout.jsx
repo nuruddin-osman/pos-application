@@ -31,6 +31,7 @@ const RootLayout = () => {
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
       <main className="flex-1 overflow-y-auto md:ml-0">
         <div className="p-6">
+          <p>hello</p>
           {/* <h1 className="text-2xl font-bold text-gray-800 mb-6">
             {activePage}
           </h1> */}
