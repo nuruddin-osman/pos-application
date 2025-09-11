@@ -17,7 +17,7 @@ const RootLayout = () => {
         return <BillingAndInvoicing />;
       case "ইনভেন্টরি ব্যবস্থাপনা":
         return <InventoryManagement />;
-      case "অ্যাপয়েন্টমেন্ট Scheduling":
+      case "অ্যাপয়েন্টমেন্ট সময়সূচী":
         return <AppoientmentScheduling />;
       case "রিপোর্টিং":
         return <Reporting />;

@@ -36,7 +36,7 @@ const Sidebar = ({ activePage, setActivePage }) => {
     },
     {
       id: 4,
-      name: "অ্যাপয়েন্টমেন্ট Scheduling",
+      name: "অ্যাপয়েন্টমেন্ট সময়সূচী",
       icon: <FaCalendarAlt className="text-xl" />,
       color: "rgb(139, 92, 246)",
     },
