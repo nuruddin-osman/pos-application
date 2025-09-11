@@ -99,7 +99,7 @@ const AdminProfile = () => {
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+                className="flex items-center btn"
               >
                 <FaEdit className="mr-2" /> এডিট করুন
               </button>

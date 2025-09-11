@@ -11,6 +11,7 @@ import {
   FaHospitalSymbol,
   FaUserCog,
 } from "react-icons/fa";
+import Avater from "../assets/image/logo/avater.png";
 
 const Sidebar = ({ activePage, setActivePage }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -104,7 +105,7 @@ const Sidebar = ({ activePage, setActivePage }) => {
               !isSidebarOpen && "justify-center w-full"
             }`}
           >
-            <FaHospitalSymbol className="text-2xl text-blue-400" />
+            {/* <FaHospitalSymbol className="text-2xl text-blue-400" /> */}
             {isSidebarOpen && (
               <h1 className="text-xl font-bold ml-2">হাসপাতাল POS</h1>
             )}
@@ -164,7 +165,13 @@ const Sidebar = ({ activePage, setActivePage }) => {
           >
             <div className="flex-shrink-0">
               <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="font-bold text-sm">A</span>
+                <div className="w-10 h-10 overflow-hidden rounded-full bg-amber-200">
+                  <img
+                    className="w-full h-full object-cover"
+                    src={Avater}
+                    alt="Profile logo"
+                  />
+                </div>
               </div>
             </div>
             {isSidebarOpen && (

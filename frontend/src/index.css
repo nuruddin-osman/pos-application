@@ -19,3 +19,12 @@ article,
 td {
   font-family: "Inter", sans-serif;
 }
+
+/* common button for  */
+.btn {
+  @apply bg-[#c0dcef] border border-[#7aa7c7] shadow-inner shadow-white/70 
+         hover:bg-[#b3d3ea] hover:text-[#2c5777] 
+         focus:ring-4 focus:ring-blue-400/30 
+         px-5 py-2.5 rounded-lg 
+         transition-colors cursor-pointer;
+}

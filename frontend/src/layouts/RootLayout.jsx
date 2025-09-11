@@ -6,9 +6,15 @@ import InventoryManagement from "../pages/inventoryManagement/Index";
 import AppoientmentScheduling from "../pages/appoientmentScheduling/Index";
 import Reporting from "../pages/reporting/Index";
 import AdminProfile from "../pages/admin-pannel/Index";
+import Logo from "../assets/image/logo/logo.webp";
+import Avater from "../assets/image/logo/avater.png";
 
 const RootLayout = () => {
   const [activePage, setActivePage] = useState("রোগী ব্যবস্থাপনা");
+
+  const handleAdminProfileClick = () => {
+    setActivePage("অ্যাডমিন প্রোফাইল");
+  };
 
   const renderPage = () => {
     switch (activePage) {
@@ -33,10 +39,34 @@ const RootLayout = () => {
     <div className="flex h-screen bg-gray-100 font-roboto">
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
       <main className="flex-1 overflow-y-auto md:ml-0">
-        <div className="p-6">
-          {/* <h1 className="text-2xl font-bold text-gray-800 mb-6">
-            {activePage}
-          </h1> */}
+        <div className="px-6 pt-2">
+          <div className="flex justify-between items-start md:items-center mb-6 bg-gradient-to-r from-purple-600 to-green-600 shadow-xl px-6 py-3 rounded-xl ">
+            <div className="text-2xl font-bold text-gray-800 font-open-sans">
+              <div className="w-24 h-18 overflow-hidden">
+                <img
+                  className="w-full h-full object-cover"
+                  src={Logo}
+                  alt="hospital logo"
+                />
+              </div>
+            </div>
+
+            <div
+              onClick={handleAdminProfileClick}
+              className="flex items-center gap-4 px-4 py-2 rounded-lg transition-colors cursor-pointer bg-slate-300"
+            >
+              <div className="w-18 h-18 overflow-hidden rounded-full bg-amber-200">
+                <img
+                  className="w-full h-full object-cover"
+                  src={Avater}
+                  alt="Profile logo"
+                />
+              </div>
+              <h2 className="hidden md:block text-3xl font-bold text-gray-800 font-open-sans">
+                Md Nuruddin Osman
+              </h2>
+            </div>
+          </div>
           {renderPage()}
         </div>
       </main>

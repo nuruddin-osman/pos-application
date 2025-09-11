@@ -243,7 +243,7 @@ const AppoientmentScheduling = () => {
           অ্যাপয়েন্টমেন্ট সময়সূচী
         </h2>
         <button
-          className="flex items-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+          className="flex items-center btn"
           onClick={() => setIsModalOpen(true)}
         >
           <FaPlus className="mr-2" />
@@ -669,10 +669,7 @@ const AppoientmentScheduling = () => {
                   >
                     বাতিল
                   </button>
-                  <button
-                    type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
-                  >
+                  <button type="submit" className="btn">
                     {editingAppointment ? "আপডেট করুন" : "যোগ করুন"}
                   </button>
                 </div>

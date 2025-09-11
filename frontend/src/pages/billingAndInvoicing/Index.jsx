@@ -231,7 +231,7 @@ const BillingAndInvoicing = () => {
         </h2>
         <div className="flex flex-col sm:flex-row gap-3">
           <button
-            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+            className="flex items-center btn"
             onClick={() => setIsInvoiceModalOpen(true)}
           >
             <FaFileInvoice className="mr-2" />
@@ -684,10 +684,7 @@ const BillingAndInvoicing = () => {
                   >
                     বাতিল
                   </button>
-                  <button
-                    type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
-                  >
+                  <button type="submit" className="btn">
                     বিল তৈরি করুন
                   </button>
                 </div>
@@ -820,7 +817,7 @@ const BillingAndInvoicing = () => {
                   <button
                     type="button"
                     onClick={processPayment}
-                    className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+                    className="btn"
                   >
                     পেমেন্ট নিশ্চিত করুন
                   </button>
