@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const router = require("./routes/patient-management/patient_management.route");
+const patientManagementRouter = require("./routes/patient-management/patient_management.route");
+const billingInvoiceRouter = require("./routes/billingAndInvoice/billingAndInvoice.route");
 require("dotenv").config();
 require("./config/database");
 
@@ -16,7 +17,8 @@ app.get("/", (req, res) => {
   res.json({ message: "Patient Management API কাজ করছে!" });
 });
 
-app.use("/api/patients", router);
+app.use("/api/patients", patientManagementRouter);
+app.use("/api/billing-invoice", billingInvoiceRouter);
 
 //routes error handller
 app.use((req, res, next) => {
@@ -29,7 +31,7 @@ app.use((req, res, next) => {
 
 //server error handller
 app.use((err, req, res, next) => {
-  console.error(err.stack); // console এ error log হবে
+  console.error(err.stack); // console error log
   res.status(500).json({
     success: false,
     message: "Internal server error",
