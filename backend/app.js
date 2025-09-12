@@ -6,6 +6,7 @@ const inventortyRouter = require("./routes/inventory/inventory.route");
 const appointmentRouter = require("./routes/appointment/appointment.route");
 const doctorsRouter = require("./routes/appointment/doctors.route");
 const patientAppointmentRouter = require("./routes/appointment/patients.route");
+const reportRouter = require("./routes/reporting/reporting.route");
 require("dotenv").config();
 require("./config/database");
 
@@ -27,6 +28,7 @@ app.use("/api/inventory", inventortyRouter);
 app.use("/api/appointments", appointmentRouter);
 app.use("/api/doctors", doctorsRouter);
 app.use("/api/patients-appointment", patientAppointmentRouter);
+app.use("/api/reports", reportRouter);
 
 //routes error handller
 app.use((req, res, next) => {
