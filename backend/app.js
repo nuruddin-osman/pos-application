@@ -3,6 +3,9 @@ const cors = require("cors");
 const patientManagementRouter = require("./routes/patient-management/patient_management.route");
 const billingInvoiceRouter = require("./routes/billingAndInvoice/billingAndInvoice.route");
 const inventortyRouter = require("./routes/inventory/inventory.route");
+const appointmentRouter = require("./routes/appointment/appointment.route");
+const doctorsRouter = require("./routes/appointment/doctors.route");
+const patientAppointmentRouter = require("./routes/appointment/patients.route");
 require("dotenv").config();
 require("./config/database");
 
@@ -21,6 +24,9 @@ app.get("/", (req, res) => {
 app.use("/api/patients", patientManagementRouter);
 app.use("/api/billing-invoice", billingInvoiceRouter);
 app.use("/api/inventory", inventortyRouter);
+app.use("/api/appointments", appointmentRouter);
+app.use("/api/doctors", doctorsRouter);
+app.use("/api/patients-appointment", patientAppointmentRouter);
 
 //routes error handller
 app.use((req, res, next) => {
