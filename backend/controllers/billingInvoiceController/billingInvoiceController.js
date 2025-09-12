@@ -97,7 +97,7 @@ const createBillingInvoice = async (req, res) => {
     const savedInvoice = await newInvoice.save();
     res.status(201).json(savedInvoice);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: error.message, status: false });
   }
 };
 
