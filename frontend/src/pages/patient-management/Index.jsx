@@ -141,11 +141,16 @@ const PatientManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("আপনি কি এই রোগীর তথ্য ডিলিট করতে চান?")) {
-      const updatedPatients = patients.filter((patient) => patient.id !== id);
-      setPatients(updatedPatients);
+  const handleDelete = async (id) => {
+    const response = await axios.delete(
+      `http://localhost:4000/api/patients/${id}`
+    );
+    if (response.data) {
+      showAlert("সফল", response.data.message, "success");
+    } else {
+      showAlert("ত্রুটি", response.data.message, "error");
     }
+    fetchPatients(searchTerm);
   };
 
   return (
