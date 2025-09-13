@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import {
@@ -90,6 +90,7 @@ const PatientManagement = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchPatients(searchTerm);
+      setCurrentPage(0);
     }, 500); // 500ms debounce
 
     return () => clearTimeout(delayDebounceFn);
@@ -244,7 +245,7 @@ const PatientManagement = () => {
             </button>
 
             {showItemsPerPageDropdown && (
-              <div className="origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 w-full">
+              <div className="origin-top-right absolute right-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 w-full">
                 <div className="py-1 " role="menu" aria-orientation="vertical">
                   {itemsPerPageOptions.map((option) => (
                     <button
