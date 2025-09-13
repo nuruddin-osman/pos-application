@@ -67,37 +67,37 @@ const PatientManagement = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (editingPatient) {
-      // এডিট মোড
-      const updatedPatients = patients.map((patient) =>
-        patient.id === editingPatient.id
-          ? { ...formData, id: editingPatient.id }
-          : patient
+      // Update patients. PUT request
+      const response = await axios.put(
+        `http://localhost:4000/api/patients/${editingPatient._id}`,
+        formData
       );
-      setPatients(updatedPatients);
+
+      if (response.data) {
+        alert("রোগীর তথ্য সফলভাবে আপডেট করা হয়েছে");
+      } else {
+        alert(response.data.message || "আপডেট করতে সমস্যা হয়েছে");
+      }
     } else {
-      // নতুন রোগী যোগ করুন
-      const newPatient = {
-        id: patients.length + 1,
-        ...formData,
-        registrationDate: new Date().toLocaleDateString("bn-BD"),
-      };
-      setPatients([...patients, newPatient]);
+      // New patients add. POST request
+      const response = await axios.post(
+        "http://localhost:4000/api/patients",
+        formData
+      );
+
+      if (response.data.status) {
+        alert("নতুন রোগী সফলভাবে যোগ করা হয়েছে");
+      } else {
+        alert(response.data.message || "যোগ করতে সমস্যা হয়েছে");
+      }
     }
+
     setIsModalOpen(false);
-    setFormData({
-      name: "",
-      age: "",
-      gender: "male",
-      phone: "",
-      email: "",
-      address: "",
-      bloodGroup: "",
-      medicalHistory: "",
-    });
     setEditingPatient(null);
+    fetchPatients(searchTerm);
   };
 
   const handleEdit = (patient) => {
@@ -257,7 +257,7 @@ const PatientManagement = () => {
                     </button>
                     <button
                       className="text-red-600 hover:text-red-900"
-                      onClick={() => handleDelete(patient.id)}
+                      onClick={() => handleDelete(patient._id)}
                     >
                       <FaTrash className="inline mr-1" /> ডিলিট
                     </button>
