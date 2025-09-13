@@ -11,6 +11,7 @@ import {
   FaMapMarkerAlt,
   FaNotesMedical,
 } from "react-icons/fa";
+import AlertModal from "../../components/AlertModal";
 
 const PatientManagement = () => {
   const [patients, setPatients] = useState([]);
@@ -18,6 +19,12 @@ const PatientManagement = () => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success",
+  });
   const [formData, setFormData] = useState({
     name: "",
     age: "",
@@ -28,6 +35,26 @@ const PatientManagement = () => {
     bloodGroup: "",
     medicalHistory: "",
   });
+
+  // Alert modal show করার function
+  const showAlert = (title, message, type = "success") => {
+    setAlertModal({
+      isOpen: true,
+      title,
+      message,
+      type,
+    });
+  };
+
+  // Alert modal close করার function
+  const closeAlert = () => {
+    setAlertModal({
+      isOpen: false,
+      title: "",
+      message: "",
+      type: "success",
+    });
+  };
 
   // Get patients and serach patients
   const fetchPatients = async (searchTerm) => {
@@ -41,7 +68,7 @@ const PatientManagement = () => {
       setPatients(response.data.patients);
     } catch (error) {
       console.error("রোগী লোড করতে সমস্যা:", error);
-      alert("রোগী লোড করতে সমস্যা হয়েছে");
+      showAlert("ত্রুটি", "রোগী লোড করতে সমস্যা হয়েছে", "error");
     } finally {
       setLoading(false);
     }
@@ -77,9 +104,13 @@ const PatientManagement = () => {
       );
 
       if (response.data) {
-        alert("রোগীর তথ্য সফলভাবে আপডেট করা হয়েছে");
+        showAlert("সফল", "রোগীর তথ্য সফলভাবে আপডেট করা হয়েছে", "success");
       } else {
-        alert(response.data.message || "আপডেট করতে সমস্যা হয়েছে");
+        showAlert(
+          "ত্রুটি",
+          response.data.message || "আপডেট করতে সমস্যা হয়েছে",
+          "error"
+        );
       }
     } else {
       // New patients add. POST request
@@ -88,10 +119,14 @@ const PatientManagement = () => {
         formData
       );
 
-      if (response.data.status) {
-        alert("নতুন রোগী সফলভাবে যোগ করা হয়েছে");
+      if (response.data) {
+        showAlert("সফল", "নতুন রোগী সফলভাবে যোগ করা হয়েছে", "success");
       } else {
-        alert(response.data.message || "যোগ করতে সমস্যা হয়েছে");
+        showAlert(
+          "ত্রুটি",
+          response.data.message || "যোগ করতে সমস্যা হয়েছে",
+          "error"
+        );
       }
     }
 
@@ -282,6 +317,14 @@ const PatientManagement = () => {
         )}
       </div>
 
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={closeAlert}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-10 mx-auto p-4 border w-full max-w-2xl shadow-lg rounded-md bg-white">
