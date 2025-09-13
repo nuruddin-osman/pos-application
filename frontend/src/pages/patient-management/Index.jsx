@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   FaPlus,
   FaSearch,
@@ -14,6 +15,7 @@ import {
 const PatientManagement = () => {
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
   const [formData, setFormData] = useState({
@@ -27,48 +29,35 @@ const PatientManagement = () => {
     medicalHistory: "",
   });
 
-  // নমুনা ডেটা
+  // Get patients and serach patients
+  const fetchPatients = async (searchTerm) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`http://localhost:4000/api/patients`, {
+        params: {
+          search: searchTerm,
+        },
+      });
+      setPatients(response.data.patients);
+    } catch (error) {
+      console.error("রোগী লোড করতে সমস্যা:", error);
+      alert("রোগী লোড করতে সমস্যা হয়েছে");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const samplePatients = [
-      {
-        id: 1,
-        name: "রহিম মিয়া",
-        age: 45,
-        gender: "male",
-        phone: "01712345678",
-        email: "rahim@example.com",
-        address: "মিরপুর, ঢাকা",
-        bloodGroup: "B+",
-        medicalHistory: "ডায়াবেটিস, উচ্চ রক্তচাপ",
-        registrationDate: "২০২৩-১০-১৫",
-      },
-      {
-        id: 2,
-        name: "সালমা খাতুন",
-        age: 32,
-        gender: "female",
-        phone: "01898765432",
-        email: "salma@example.com",
-        address: "উত্তরা, ঢাকা",
-        bloodGroup: "O+",
-        medicalHistory: "অ্যাজমা",
-        registrationDate: "২০২৩-১০-২০",
-      },
-      {
-        id: 3,
-        name: "আব্দুল্লাহ আল মামুন",
-        age: 28,
-        gender: "male",
-        phone: "01911223344",
-        email: "mamun@example.com",
-        address: "গুলশান, ঢাকা",
-        bloodGroup: "AB+",
-        medicalHistory: "অ্যালার্জি",
-        registrationDate: "২০২৩-১০-২৫",
-      },
-    ];
-    setPatients(samplePatients);
+    fetchPatients(searchTerm);
   }, []);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchPatients(searchTerm);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -123,12 +112,6 @@ const PatientManagement = () => {
       setPatients(updatedPatients);
     }
   };
-
-  const filteredPatients = patients.filter(
-    (patient) =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm)
-  );
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
@@ -216,13 +199,13 @@ const PatientManagement = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredPatients.map((patient) => (
+              {patients.map((patient, index) => (
                 <tr
-                  key={patient.id}
+                  key={patient._id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {patient.id}
+                    {index + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     <div className="flex items-center">
@@ -284,7 +267,7 @@ const PatientManagement = () => {
             </tbody>
           </table>
         </div>
-        {filteredPatients.length === 0 && (
+        {patients.length === 0 && !loading && (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center rounded-full bg-gray-100 p-4 mb-4">
               <FaUserInjured className="h-12 w-12 text-gray-400" />
