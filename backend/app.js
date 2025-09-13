@@ -7,6 +7,7 @@ const appointmentRouter = require("./routes/appointment/appointment.route");
 const doctorsRouter = require("./routes/appointment/doctors.route");
 const patientAppointmentRouter = require("./routes/appointment/patients.route");
 const reportRouter = require("./routes/reporting/reporting.route");
+const adminRouter = require("./routes/admin/admin.route");
 require("dotenv").config();
 require("./config/database");
 
@@ -29,6 +30,7 @@ app.use("/api/appointments", appointmentRouter);
 app.use("/api/doctors", doctorsRouter);
 app.use("/api/patients-appointment", patientAppointmentRouter);
 app.use("/api/reports", reportRouter);
+app.use("/api/admin", adminRouter);
 
 //routes error handller
 app.use((req, res, next) => {
