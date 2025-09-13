@@ -1,6 +1,7 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import RootLayout from "./layouts/RootLayout";
+import DruftApi from "./components/DruftApi";
 
 const App = () => {
   let router = createBrowserRouter([
@@ -13,6 +14,10 @@ const App = () => {
           element: <RootLayout />,
         },
       ],
+    },
+    {
+      path: "/asdf",
+      element: <DruftApi />,
     },
   ]);
   return (

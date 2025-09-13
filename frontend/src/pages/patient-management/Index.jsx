@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ReactPaginate from "react-paginate";
 import {
   FaPlus,
   FaSearch,
@@ -7,11 +8,13 @@ import {
   FaTrash,
   FaUserInjured,
   FaPhone,
+  FaCog,
   FaEnvelope,
   FaMapMarkerAlt,
   FaNotesMedical,
 } from "react-icons/fa";
 import AlertModal from "../../components/AlertModal";
+import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
 
 const PatientManagement = () => {
   const [patients, setPatients] = useState([]);
@@ -19,6 +22,12 @@ const PatientManagement = () => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(4);
+  const [showItemsPerPageDropdown, setShowItemsPerPageDropdown] =
+    useState(false);
+
   const [alertModal, setAlertModal] = useState({
     isOpen: false,
     title: "",
@@ -153,8 +162,29 @@ const PatientManagement = () => {
     fetchPatients(searchTerm);
   };
 
+  // Pagination calculation
+  const startOffset = currentPage * itemsPerPage;
+  const endOffset = startOffset + itemsPerPage;
+  const pageCount = Math.ceil(patients.length / itemsPerPage);
+  const currentPatients = patients.slice(startOffset, endOffset);
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  // Items per page options
+  const itemsPerPageOptions = getItemsPerPageOptions();
+
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(value);
+    setCurrentPage(0); // Reset to first page when changing items per page
+    setShowItemsPerPageDropdown(false);
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
+      {/* Items per page selector */}
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
         <h2 className="text-2xl font-bold text-gray-800 font-open-sans mb-4 md:mb-0">
           রোগী ব্যবস্থাপনা
@@ -180,6 +210,41 @@ const PatientManagement = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center p-4 border-b border-gray-200">
+        <div className="text-sm text-gray-600">
+          মোট রোগী: {patients.length} জন
+        </div>
+        <div className="relative">
+          <button
+            className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+            onClick={() =>
+              setShowItemsPerPageDropdown(!showItemsPerPageDropdown)
+            }
+          >
+            <FaCog className="mr-2" />
+            প্রতি পেজে: {itemsPerPage}
+          </button>
+
+          {showItemsPerPageDropdown && (
+            <div className="origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+              <div className="py-1" role="menu" aria-orientation="vertical">
+                {itemsPerPageOptions.map((option) => (
+                  <button
+                    key={option}
+                    className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left ${
+                      itemsPerPage === option ? "bg-blue-100 text-blue-800" : ""
+                    }`}
+                    onClick={() => handleItemsPerPageChange(option)}
+                  >
+                    {option}টি আইটেম
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -239,13 +304,13 @@ const PatientManagement = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {patients.map((patient, index) => (
+              {currentPatients.map((patient, index) => (
                 <tr
                   key={patient._id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {index + 1}
+                    {startOffset + index + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     <div className="flex items-center">
@@ -268,10 +333,12 @@ const PatientManagement = () => {
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         patient.gender === "male"
                           ? "bg-blue-100 text-blue-800"
-                          : "bg-pink-100 text-pink-800"
+                          : patient.gender === "female"
+                          ? "bg-pink-100 text-[#1aa33f]"
+                          : "bg-pink-100 text-red-800"
                       }`}
                     >
-                      {patient.gender === "male" ? "পুরুষ" : "মহিলা"}
+                      {patient.gender}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -330,6 +397,45 @@ const PatientManagement = () => {
         message={alertModal.message}
         type={alertModal.type}
       />
+      {/* Pagination Controls */}
+      <div className="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between">
+        <div className="text-sm text-gray-700 mb-4 sm:mb-0">
+          দেখানো হচ্ছে <span className="font-medium">{startOffset + 1}</span>{" "}
+          থেকে{" "}
+          <span className="font-medium">
+            {Math.min(endOffset, patients.length)}
+          </span>{" "}
+          এর মধ্যে, মোট <span className="font-medium">{patients.length}</span>{" "}
+          রোগী
+        </div>
+
+        <ReactPaginate
+          previousLabel={"পূর্বের"}
+          nextLabel={"পরের"}
+          breakLabel={"..."}
+          pageCount={pageCount}
+          marginPagesDisplayed={2}
+          pageRangeDisplayed={5}
+          onPageChange={handlePageClick}
+          containerClassName={"flex items-center space-x-2"}
+          pageClassName={
+            "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50"
+          }
+          pageLinkClassName={"text-gray-700"}
+          previousClassName={
+            "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50"
+          }
+          previousLinkClassName={"text-gray-700"}
+          nextClassName={
+            "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50"
+          }
+          nextLinkClassName={"text-gray-700"}
+          breakClassName={"px-3 py-2"}
+          activeClassName={"bg-blue-500 text-white border-blue-500"}
+          disabledClassName={"opacity-50 cursor-not-allowed"}
+          forcePage={currentPage}
+        />
+      </div>
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-10 mx-auto p-4 border w-full max-w-2xl shadow-lg rounded-md bg-white">
