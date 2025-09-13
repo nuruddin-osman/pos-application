@@ -185,7 +185,7 @@ const PatientManagement = () => {
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
       {/* Items per page selector */}
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
+      <div className=" flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
         <h2 className="text-2xl font-bold text-gray-800 font-open-sans mb-4 md:mb-0">
           রোগী ব্যবস্থাপনা
         </h2>
@@ -198,7 +198,7 @@ const PatientManagement = () => {
         </button>
       </div>
 
-      <div className="bg-white p-4 rounded-xl shadow-sm mb-6">
+      <div className="xl:hidden bg-white p-4 rounded-xl shadow-sm">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <FaSearch className="text-gray-400" />
@@ -213,38 +213,56 @@ const PatientManagement = () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center p-4 border-b border-gray-200">
-        <div className="text-sm text-gray-600">
+      <div className="w-full flex justify-between items-center p-4 border-b border-gray-200">
+        <div className="xl:w-[16%] text-base text-gray-600">
           মোট রোগী: {patients.length} জন
         </div>
-        <div className="relative">
-          <button
-            className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-            onClick={() =>
-              setShowItemsPerPageDropdown(!showItemsPerPageDropdown)
-            }
-          >
-            <FaCog className="mr-2" />
-            প্রতি পেজে: {itemsPerPage}
-          </button>
-
-          {showItemsPerPageDropdown && (
-            <div className="origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-              <div className="py-1" role="menu" aria-orientation="vertical">
-                {itemsPerPageOptions.map((option) => (
-                  <button
-                    key={option}
-                    className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left ${
-                      itemsPerPage === option ? "bg-blue-100 text-blue-800" : ""
-                    }`}
-                    onClick={() => handleItemsPerPageChange(option)}
-                  >
-                    {option}টি আইটেম
-                  </button>
-                ))}
-              </div>
+        <div className="w-[68%] hidden xl:block bg-white p-4 rounded-xl shadow-sm">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FaSearch className="text-gray-400" />
             </div>
-          )}
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="রোগীর নাম বা ফোন নম্বর দিয়ে খুঁজুন..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="xl:w-[16%] flex justify-end">
+          <div className=" relative">
+            <button
+              className="flex items-center px-5 py-3 border border-gray-300 rounded-md bg-white text-base font-medium text-gray-700 hover:bg-gray-50"
+              onClick={() =>
+                setShowItemsPerPageDropdown(!showItemsPerPageDropdown)
+              }
+            >
+              <FaCog className="mr-2" />
+              প্রতি পেজে: {itemsPerPage}
+            </button>
+
+            {showItemsPerPageDropdown && (
+              <div className="origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 w-full">
+                <div className="py-1 " role="menu" aria-orientation="vertical">
+                  {itemsPerPageOptions.map((option) => (
+                    <button
+                      key={option}
+                      className={`block px-4 py-2 text-base text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left ${
+                        itemsPerPage === option
+                          ? "bg-blue-100 text-blue-800"
+                          : ""
+                      }`}
+                      onClick={() => handleItemsPerPageChange(option)}
+                    >
+                      {option}টি আইটেম
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -398,8 +416,8 @@ const PatientManagement = () => {
         type={alertModal.type}
       />
       {/* Pagination Controls */}
-      <div className="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between">
-        <div className="text-sm text-gray-700 mb-4 sm:mb-0">
+      <div className="xl:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-end xl:justify-between">
+        <div className="hidden xl:block text-sm text-gray-700 mb-4 sm:mb-0">
           দেখানো হচ্ছে <span className="font-medium">{startOffset + 1}</span>{" "}
           থেকে{" "}
           <span className="font-medium">
@@ -418,18 +436,14 @@ const PatientManagement = () => {
           pageRangeDisplayed={5}
           onPageChange={handlePageClick}
           containerClassName={"flex items-center space-x-2"}
-          pageClassName={
-            "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50"
-          }
-          pageLinkClassName={"text-gray-700"}
+          pageClassName={"py-2 rounded border border-gray-300 hover:bg-gray-50"}
+          pageLinkClassName={"text-gray-700 px-5 py-3"}
           previousClassName={
-            "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50"
+            "py-2 rounded border border-gray-300 hover:bg-gray-50"
           }
-          previousLinkClassName={"text-gray-700"}
-          nextClassName={
-            "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50"
-          }
-          nextLinkClassName={"text-gray-700"}
+          previousLinkClassName={"text-gray-700 px-5 py-3"}
+          nextClassName={"py-2 rounded border border-gray-300 hover:bg-gray-50"}
+          nextLinkClassName={"text-gray-700 px-5 py-3"}
           breakClassName={"px-3 py-2"}
           activeClassName={"bg-blue-500 text-white border-blue-500"}
           disabledClassName={"opacity-50 cursor-not-allowed"}
