@@ -104,16 +104,43 @@ const BillingAndInvoicing = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await axios.post(
-      `http://localhost:4000/api/billing-invoice`,
-      formData
-    );
-    if (response.data) {
-      alert("new invoice created");
-    } else {
-      alert(response.data.message);
+    try {
+      const response = await axios.post(
+        `http://localhost:4000/api/billing-invoice`,
+        formData
+      );
+
+      if (response.data) {
+        alert("✅ নতুন ইনভয়েস তৈরি হয়েছে");
+
+        // 🔄 modal বন্ধ করার আগে ফর্ম reset
+        setFormData({
+          patientId: "",
+          patientName: "",
+          services: [],
+          totalAmount: 0,
+          discount: 0,
+          tax: 0,
+          paidAmount: 0,
+          paymentMethod: "cash",
+          status: "pending",
+        });
+
+        setServiceForm({
+          name: "",
+          price: "",
+          quantity: 1,
+        });
+
+        setIsInvoiceModalOpen(false);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "❌ ইনভয়েস তৈরি করতে সমস্যা হয়েছে"
+      );
     }
-    setIsInvoiceModalOpen(false);
   };
 
   // পেমেন্ট প্রসেস করুন
@@ -138,6 +165,8 @@ const BillingAndInvoicing = () => {
         )
       );
 
+      await earningAmounts();
+
       setIsPaymentModalOpen(false);
       setSelectedInvoice(null);
       alert("Payment updated successfully!");
@@ -157,7 +186,7 @@ const BillingAndInvoicing = () => {
   };
   useEffect(() => {
     earningAmounts();
-  }, []);
+  }, [searchTerm]);
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
@@ -637,7 +666,7 @@ const BillingAndInvoicing = () => {
                       <span className="font-medium">নিট Amount:</span>
                       <span className="font-bold">
                         {(
-                          formData.totalAmount -
+                          serviceForm.quantity * serviceForm.price -
                           formData.discount +
                           formData.tax
                         ).toFixed(2)}{" "}
