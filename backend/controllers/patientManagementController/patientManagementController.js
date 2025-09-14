@@ -3,7 +3,7 @@ const PaientsManagement = require("../../models/patient-management/patient_manag
 //patients query controller
 const PaientsManagementSearchQuery = async (req, res) => {
   try {
-    const { search, page = 1, limit = 10 } = req.query;
+    const { search } = req.query;
 
     let query = {};
 
@@ -17,17 +17,15 @@ const PaientsManagementSearchQuery = async (req, res) => {
       };
     }
 
-    const patients = await PaientsManagement.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+    const patients = await PaientsManagement.find(query).sort({
+      createdAt: -1,
+    });
 
     const total = await PaientsManagement.countDocuments(query);
 
     res.json({
+      status: "success",
       patients,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
       total,
     });
   } catch (error) {
