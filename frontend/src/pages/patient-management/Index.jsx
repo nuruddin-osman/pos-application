@@ -437,13 +437,17 @@ const PatientManagement = () => {
           pageRangeDisplayed={5}
           onPageChange={handlePageClick}
           containerClassName={"flex items-center space-x-2"}
-          pageClassName={"py-2 rounded border border-gray-300 hover:bg-gray-50"}
+          pageClassName={
+            "py-2 rounded border border-gray-300 hover:bg-gray-50 cursor-pointer"
+          }
           pageLinkClassName={"text-gray-700 px-5 py-3"}
           previousClassName={
-            "py-2 rounded border border-gray-300 hover:bg-gray-50"
+            "py-2 rounded border border-gray-300 hover:bg-gray-50  cursor-pointer"
           }
           previousLinkClassName={"text-gray-700 px-5 py-3"}
-          nextClassName={"py-2 rounded border border-gray-300 hover:bg-gray-50"}
+          nextClassName={
+            "py-2 rounded border border-gray-300 hover:bg-gray-50  cursor-pointer"
+          }
           nextLinkClassName={"text-gray-700 px-5 py-3"}
           breakClassName={"px-3 py-2"}
           activeClassName={"bg-blue-500 text-white border-blue-500"}

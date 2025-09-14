@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
   FaFileInvoice,
@@ -17,6 +18,7 @@ const BillingAndInvoicing = () => {
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     patientId: "",
@@ -36,190 +38,123 @@ const BillingAndInvoicing = () => {
     quantity: 1,
   });
 
-  // নমুনা ডেটা
+  //Total amount calculate
   useEffect(() => {
-    const sampleInvoices = [
-      {
-        id: "INV-2023-001",
-        patientId: "P001",
-        patientName: "রহিম মিয়া",
-        date: "২০২৩-১০-১৫",
-        services: [
-          { name: "ডাক্তার ফি", price: 500, quantity: 1 },
-          { name: "ব্লাড টেস্ট", price: 300, quantity: 1 },
-          { name: "এক্স-রে", price: 800, quantity: 1 },
-        ],
-        totalAmount: 1600,
-        discount: 100,
-        tax: 80,
-        paidAmount: 1580,
-        paymentMethod: "cash",
-        status: "paid",
-      },
-      {
-        id: "INV-2023-002",
-        patientId: "P002",
-        patientName: "সালমা খাতুন",
-        date: "২০২৩-১০-১৬",
-        services: [
-          { name: "ডাক্তার ফি", price: 500, quantity: 1 },
-          { name: "মেডিসিন", price: 1200, quantity: 1 },
-        ],
-        totalAmount: 1700,
-        discount: 0,
-        tax: 85,
-        paidAmount: 0,
-        paymentMethod: "",
-        status: "pending",
-      },
-      {
-        id: "INV-2023-003",
-        patientId: "P003",
-        patientName: "আব্দুল্লাহ আল মামুন",
-        date: "২০২৩-১০-১৭",
-        services: [
-          { name: "ডাক্তার ফি", price: 500, quantity: 1 },
-          { name: "ইসিজি", price: 400, quantity: 1 },
-          { name: "অপারেশন চার্জ", price: 5000, quantity: 1 },
-        ],
-        totalAmount: 5900,
-        discount: 500,
-        tax: 270,
-        paidAmount: 3000,
-        paymentMethod: "card",
-        status: "partial",
-      },
-    ];
-    setInvoices(sampleInvoices);
-  }, []);
+    const total = formData.services.reduce((sum, service) => {
+      return sum + Number(service.price) * Number(service.quantity);
+    }, 0);
 
-  // পরিষেবা যোগ করুন
+    setFormData((prev) => ({
+      ...prev,
+      totalAmount: total,
+    }));
+  }, [formData.services, formData.discount, formData.tax]);
+
   const addService = () => {
-    if (serviceForm.name && serviceForm.price) {
-      const newService = {
-        name: serviceForm.name,
-        price: parseFloat(serviceForm.price),
-        quantity: parseInt(serviceForm.quantity),
-      };
+    if (!serviceForm.name || !serviceForm.price) {
+      alert("সার্ভিসের নাম এবং দাম দিতে হবে");
+      return;
+    }
 
-      const updatedServices = [...formData.services, newService];
-      const newTotal = updatedServices.reduce(
-        (sum, service) => sum + service.price * service.quantity,
-        0
+    setFormData((prev) => ({
+      ...prev,
+      services: [...prev.services, serviceForm], // service যোগ হচ্ছে
+    }));
+
+    // Reset input fields
+    setServiceForm({ name: "", price: "", quantity: 1 });
+  };
+
+  const removeService = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      services: prev.services.filter((_, i) => i !== index),
+    }));
+  };
+
+  //get all patients invoice
+
+  // Get all patients invoice
+  const fetchInvoice = async (searchTerm = "") => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/api/billing-invoice/`,
+        {
+          params: {
+            search: searchTerm,
+          },
+        }
       );
-
-      setFormData({
-        ...formData,
-        services: updatedServices,
-        totalAmount: newTotal,
-      });
-
-      setServiceForm({ name: "", price: "", quantity: 1 });
+      if (response.data) {
+        setInvoices(response.data.invoices);
+      } else {
+        alert("response.data.message");
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || "ডেটা লোড করতে সমস্যা হয়েছে");
+    } finally {
+      setLoading(false);
     }
   };
+  // শুধু প্রথমবার fetch করার জন্য
+  useEffect(() => {
+    fetchInvoice("");
+  }, []);
 
-  // পরিষেবা সরান
-  const removeService = (index) => {
-    const updatedServices = formData.services.filter((_, i) => i !== index);
-    const newTotal = updatedServices.reduce(
-      (sum, service) => sum + service.price * service.quantity,
-      0
-    );
+  // Search term change হলে debounce সহ fetch
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchInvoice(searchTerm);
+    }, 500);
 
-    setFormData({
-      ...formData,
-      services: updatedServices,
-      totalAmount: newTotal,
-    });
-  };
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   // ইনভয়েস সাবমিট করুন
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newInvoice = {
-      id: `INV-2023-${String(invoices.length + 1).padStart(3, "0")}`,
-      patientId: formData.patientId,
-      patientName: formData.patientName,
-      date: new Date().toLocaleDateString("bn-BD"),
-      services: formData.services,
-      totalAmount: formData.totalAmount,
-      discount: formData.discount,
-      tax: formData.tax,
-      paidAmount: formData.paidAmount,
-      paymentMethod: formData.paymentMethod,
-      status: formData.status,
-    };
 
-    setInvoices([...invoices, newInvoice]);
+    const response = await axios.post(
+      `http://localhost:4000/api/billing-invoice`,
+      formData
+    );
+    if (response.data) {
+      alert("new invoice created");
+    } else {
+      alert(response.data.message);
+    }
     setIsInvoiceModalOpen(false);
-    setFormData({
-      patientId: "",
-      patientName: "",
-      services: [],
-      totalAmount: 0,
-      discount: 0,
-      tax: 0,
-      paidAmount: 0,
-      paymentMethod: "cash",
-      status: "pending",
-    });
   };
 
   // পেমেন্ট প্রসেস করুন
-  const processPayment = () => {
-    if (selectedInvoice) {
-      const updatedInvoices = invoices.map((inv) =>
-        inv.id === selectedInvoice.id
-          ? {
-              ...inv,
-              paidAmount: formData.paidAmount,
-              paymentMethod: formData.paymentMethod,
-              status:
-                formData.paidAmount >= inv.totalAmount - inv.discount + inv.tax
-                  ? "paid"
-                  : "partial",
-            }
-          : inv
+  const updatePayment = async () => {
+    if (!selectedInvoice) return;
+
+    try {
+      const response = await axios.patch(
+        `http://localhost:4000/api/billing-invoice/${selectedInvoice.invoiceId}/payment`,
+        {
+          paidAmount: formData.paidAmount,
+          paymentMethod: formData.paymentMethod,
+        }
       );
 
-      setInvoices(updatedInvoices);
+      // Update UI
+      const updatedInvoice = response.data;
+      console.log(updatedInvoice);
+      setInvoices((prev) =>
+        prev.map((inv) =>
+          inv.invoiceId === updatedInvoice.invoiceId ? updatedInvoice : inv
+        )
+      );
+
       setIsPaymentModalOpen(false);
       setSelectedInvoice(null);
-    }
-  };
-
-  // ফিল্টার করা ইনভয়েস
-  const filteredInvoices = invoices.filter(
-    (invoice) =>
-      invoice.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      invoice.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // স্ট্যাটাস ব্যাজ স্টাইল
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "paid":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "partial":
-        return "bg-blue-100 text-blue-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  // স্ট্যাটাস টেক্সট
-  const getStatusText = (status) => {
-    switch (status) {
-      case "paid":
-        return "পরিশোধিত";
-      case "pending":
-        return "বকেয়া";
-      case "partial":
-        return "আংশিক";
-      default:
-        return "অজানা";
+      alert("Payment updated successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Payment update failed!");
     }
   };
 
@@ -349,13 +284,13 @@ const BillingAndInvoicing = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredInvoices.map((invoice) => (
+              {invoices.map((invoice, index) => (
                 <tr
-                  key={invoice.id}
+                  key={invoice._id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {invoice.id}
+                    {index + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     <div className="flex items-center">
@@ -383,11 +318,15 @@ const BillingAndInvoicing = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(
-                        invoice.status
-                      )}`}
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        invoice.status === "paid"
+                          ? "bg-green-100 text-green-800"
+                          : invoice.status === "partial"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
                     >
-                      {getStatusText(invoice.status)}
+                      {invoice.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -405,6 +344,7 @@ const BillingAndInvoicing = () => {
                     >
                       <FaMoneyBillWave className="inline mr-1" /> পেমেন্ট
                     </button>
+
                     <button className="text-green-600 hover:text-green-900">
                       <FaPrint className="inline mr-1" /> প্রিন্ট
                     </button>
@@ -414,7 +354,7 @@ const BillingAndInvoicing = () => {
             </tbody>
           </table>
         </div>
-        {filteredInvoices.length === 0 && (
+        {invoices.length === 0 && loading && (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center rounded-full bg-gray-100 p-4 mb-4">
               <FaFileInvoice className="h-12 w-12 text-gray-400" />
@@ -527,7 +467,7 @@ const BillingAndInvoicing = () => {
                         onChange={(e) =>
                           setServiceForm({
                             ...serviceForm,
-                            price: e.target.value,
+                            price: Number(e.target.value),
                           })
                         }
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -543,7 +483,7 @@ const BillingAndInvoicing = () => {
                         onChange={(e) =>
                           setServiceForm({
                             ...serviceForm,
-                            quantity: e.target.value,
+                            quantity: Number(e.target.value),
                           })
                         }
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
@@ -814,11 +754,7 @@ const BillingAndInvoicing = () => {
                   >
                     বাতিল
                   </button>
-                  <button
-                    type="button"
-                    onClick={processPayment}
-                    className="btn"
-                  >
+                  <button type="button" onClick={updatePayment} className="btn">
                     পেমেন্ট নিশ্চিত করুন
                   </button>
                 </div>

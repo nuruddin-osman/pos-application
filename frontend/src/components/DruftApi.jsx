@@ -257,15 +257,15 @@ const DruftApi = () => {
             onPageChange={handlePageClick}
             containerClassName={"flex items-center space-x-2"}
             pageClassName={
-              "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50"
+              "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50  cursor-pointer"
             }
             pageLinkClassName={"text-gray-700"}
             previousClassName={
-              "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50"
+              "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50  cursor-pointer"
             }
             previousLinkClassName={"text-gray-700"}
             nextClassName={
-              "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50"
+              "px-3 py-2 rounded border border-gray-300 hover:bg-gray-50 cursor-pointer"
             }
             nextLinkClassName={"text-gray-700"}
             breakClassName={"px-3 py-2"}
