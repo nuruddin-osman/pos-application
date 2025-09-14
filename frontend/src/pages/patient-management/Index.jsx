@@ -13,8 +13,8 @@ import {
   FaMapMarkerAlt,
   FaNotesMedical,
 } from "react-icons/fa";
-import AlertModal from "../../components/AlertModal";
 import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
+import { useAlert } from "../../components/AlertMessage";
 
 const PatientManagement = () => {
   const [patients, setPatients] = useState([]);
@@ -44,26 +44,7 @@ const PatientManagement = () => {
     bloodGroup: "",
     medicalHistory: "",
   });
-
-  // Alert modal show করার function
-  const showAlert = (title, message, type = "success") => {
-    setAlertModal({
-      isOpen: true,
-      title,
-      message,
-      type,
-    });
-  };
-
-  // Alert modal close করার function
-  const closeAlert = () => {
-    setAlertModal({
-      isOpen: false,
-      title: "",
-      message: "",
-      type: "success",
-    });
-  };
+  const { showAlert } = useAlert();
 
   // Get patients and serach patients
   const fetchPatients = async (searchTerm) => {
@@ -408,14 +389,6 @@ const PatientManagement = () => {
         )}
       </div>
 
-      {/* Alert Modal */}
-      <AlertModal
-        isOpen={alertModal.isOpen}
-        onClose={closeAlert}
-        title={alertModal.title}
-        message={alertModal.message}
-        type={alertModal.type}
-      />
       {/* Pagination Controls */}
       <div className="xl:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-end xl:justify-between">
         <div className="hidden xl:block text-sm text-gray-700 mb-4 sm:mb-0">

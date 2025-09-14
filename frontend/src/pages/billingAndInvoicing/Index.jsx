@@ -10,7 +10,11 @@ import {
   FaTrash,
   FaUserInjured,
   FaNotesMedical,
+  FaCog,
 } from "react-icons/fa";
+import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
+import ReactPaginate from "react-paginate";
+import { useAlert } from "../../components/AlertMessage";
 
 const BillingAndInvoicing = () => {
   const [invoices, setInvoices] = useState([]);
@@ -20,6 +24,10 @@ const BillingAndInvoicing = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [loading, setLoading] = useState(false);
   const [earningAmount, setEarningAmount] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [showItemsPerPageDropdown, setShowItemsPerPageDropdown] =
+    useState(false);
 
   const [formData, setFormData] = useState({
     patientId: "",
@@ -39,9 +47,11 @@ const BillingAndInvoicing = () => {
     quantity: 1,
   });
 
+  const { showAlert } = useAlert();
+
   const addService = () => {
     if (!serviceForm.name || !serviceForm.price) {
-      alert("সার্ভিসের নাম এবং দাম দিতে হবে");
+      showAlert("ত্রুটি", "সার্ভিসের নাম এবং দাম দিতে হবে", "error");
       return;
     }
 
@@ -61,8 +71,6 @@ const BillingAndInvoicing = () => {
     }));
   };
 
-  //get all patients invoice
-
   // Get all patients invoice
   const fetchInvoice = async (searchTerm = "") => {
     setLoading(true);
@@ -78,20 +86,20 @@ const BillingAndInvoicing = () => {
       if (response.data) {
         setInvoices(response.data.invoices);
       } else {
-        alert("response.data.message");
+        showAlert("Error", "Data get false", "error");
       }
     } catch (error) {
-      alert(error.response?.data?.message || "ডেটা লোড করতে সমস্যা হয়েছে");
+      showAlert("error", error.response?.data?.message, "error");
     } finally {
       setLoading(false);
     }
   };
-  // শুধু প্রথমবার fetch করার জন্য
+  // First time fetch api
   useEffect(() => {
     fetchInvoice("");
   }, []);
 
-  // Search term change হলে debounce সহ fetch
+  // Search term change in debounce with fetch
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchInvoice(searchTerm);
@@ -100,7 +108,7 @@ const BillingAndInvoicing = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
 
-  // ইনভয়েস সাবমিট করুন
+  // Invoice submit handle
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -111,9 +119,9 @@ const BillingAndInvoicing = () => {
       );
 
       if (response.data) {
-        alert("✅ নতুন ইনভয়েস তৈরি হয়েছে");
+        showAlert("Success", "New invoices created", "success");
 
-        // 🔄 modal বন্ধ করার আগে ফর্ম reset
+        // 🔄 modal  reset
         setFormData({
           patientId: "",
           patientName: "",
@@ -134,16 +142,14 @@ const BillingAndInvoicing = () => {
 
         setIsInvoiceModalOpen(false);
       } else {
-        alert(response.data.message);
+        showAlert("Error", response.data.message, "error");
       }
     } catch (error) {
-      alert(
-        error.response?.data?.message || "❌ ইনভয়েস তৈরি করতে সমস্যা হয়েছে"
-      );
+      showAlert("Error", error.response?.data?.message, "error");
     }
   };
 
-  // পেমেন্ট প্রসেস করুন
+  // payment proccess
   const updatePayment = async () => {
     if (!selectedInvoice) return;
 
@@ -169,13 +175,14 @@ const BillingAndInvoicing = () => {
 
       setIsPaymentModalOpen(false);
       setSelectedInvoice(null);
-      alert("Payment updated successfully!");
+      showAlert("Success", "Payment updated successfully!", "success");
     } catch (error) {
       console.error(error);
       alert("Payment update failed!");
     }
   };
 
+  //Dashoard stats calculation
   const earningAmounts = async () => {
     const response = await axios.get(
       `http://localhost:4000/api/billing-invoice/dashboard/stats`
@@ -187,6 +194,25 @@ const BillingAndInvoicing = () => {
   useEffect(() => {
     earningAmounts();
   }, [searchTerm]);
+
+  // Pagination calculation
+  const startOffset = currentPage * itemsPerPage;
+  const endOffset = startOffset + itemsPerPage;
+  const pageCount = Math.ceil(invoices.length / itemsPerPage);
+  const currentInvoices = invoices.slice(startOffset, endOffset);
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  // Items per page options
+  const itemsPerPageOptions = getItemsPerPageOptions();
+
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(value);
+    setCurrentPage(0); // Reset to first page when changing items per page
+    setShowItemsPerPageDropdown(false);
+  };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
@@ -294,6 +320,43 @@ const BillingAndInvoicing = () => {
         </div>
       </div>
 
+      {/* Items per page selector */}
+      <div className="flex justify-between items-center p-4 border-b border-gray-200">
+        <div className="text-sm text-gray-600">
+          মোট রোগী: {invoices.length} জন
+        </div>
+
+        <div className="relative">
+          <button
+            className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+            onClick={() =>
+              setShowItemsPerPageDropdown(!showItemsPerPageDropdown)
+            }
+          >
+            <FaCog className="mr-2" />
+            প্রতি পেজে: {itemsPerPage}
+          </button>
+
+          {showItemsPerPageDropdown && (
+            <div className="origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+              <div className="py-1" role="menu" aria-orientation="vertical">
+                {itemsPerPageOptions.map((option) => (
+                  <button
+                    key={option}
+                    className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left ${
+                      itemsPerPage === option ? "bg-blue-100 text-blue-800" : ""
+                    }`}
+                    onClick={() => handleItemsPerPageChange(option)}
+                  >
+                    {option} টি আইটেম
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -344,13 +407,13 @@ const BillingAndInvoicing = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {invoices.map((invoice, index) => (
+              {currentInvoices.map((invoice, index) => (
                 <tr
                   key={invoice._id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {index + 1}
+                    {startOffset + index + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     <div className="flex items-center">
@@ -427,6 +490,46 @@ const BillingAndInvoicing = () => {
             </p>
           </div>
         )}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="xl:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-end xl:justify-between">
+        <div className="hidden xl:block text-sm text-gray-700 mb-4 sm:mb-0">
+          দেখানো হচ্ছে <span className="font-medium">{startOffset + 1}</span>{" "}
+          থেকে{" "}
+          <span className="font-medium">
+            {Math.min(endOffset, invoices.length)}
+          </span>{" "}
+          এর মধ্যে, মোট <span className="font-medium">{invoices.length}</span>{" "}
+          রোগী
+        </div>
+
+        <ReactPaginate
+          previousLabel={"পূর্বের"}
+          nextLabel={"পরের"}
+          breakLabel={"..."}
+          pageCount={pageCount}
+          marginPagesDisplayed={2}
+          pageRangeDisplayed={5}
+          onPageChange={handlePageClick}
+          containerClassName={"flex items-center space-x-2"}
+          pageClassName={
+            "py-2 rounded border border-gray-300 hover:bg-gray-50 cursor-pointer"
+          }
+          pageLinkClassName={"text-gray-700 px-5 py-3"}
+          previousClassName={
+            "py-2 rounded border border-gray-300 hover:bg-gray-50  cursor-pointer"
+          }
+          previousLinkClassName={"text-gray-700 px-5 py-3"}
+          nextClassName={
+            "py-2 rounded border border-gray-300 hover:bg-gray-50  cursor-pointer"
+          }
+          nextLinkClassName={"text-gray-700 px-5 py-3"}
+          breakClassName={"px-3 py-2"}
+          activeClassName={"bg-blue-500 text-white border-blue-500"}
+          disabledClassName={"opacity-50 cursor-not-allowed"}
+          forcePage={currentPage}
+        />
       </div>
 
       {/* নতুন বিল মডাল */}

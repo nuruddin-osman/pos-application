@@ -2,6 +2,7 @@ import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import RootLayout from "./layouts/RootLayout";
 import DruftApi from "./components/DruftApi";
+import { AlertProvider } from "./components/AlertMessage";
 
 const App = () => {
   let router = createBrowserRouter([
@@ -22,7 +23,9 @@ const App = () => {
   ]);
   return (
     <>
-      <RouterProvider router={router} />
+      <AlertProvider>
+        <RouterProvider router={router} />
+      </AlertProvider>
     </>
   );
 };
