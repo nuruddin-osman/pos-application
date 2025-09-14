@@ -3,7 +3,7 @@ const Invoice = require("../../models/billingAndInvoice/billingAndInvoice.model"
 // get all invoice controller
 const getBillingInvoiceQuery = async (req, res) => {
   try {
-    const { search, page = 1, limit = 10 } = req.query;
+    const { search } = req.query;
 
     let query = {};
     if (search) {
@@ -15,17 +15,12 @@ const getBillingInvoiceQuery = async (req, res) => {
       };
     }
 
-    const invoices = await Invoice.find(query)
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .sort({ createdAt: -1 });
+    const invoices = await Invoice.find(query).sort({ createdAt: -1 });
 
     const total = await Invoice.countDocuments(query);
 
     res.json({
       invoices,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
       total,
     });
   } catch (error) {
