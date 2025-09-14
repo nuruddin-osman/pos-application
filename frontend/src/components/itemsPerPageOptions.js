@@ -3,7 +3,7 @@ export const getItemsPerPageOptions = () => {
   const options = [];
 
   // Add standard options
-  for (let i = 4; i <= 20; i += 4) {
+  for (let i = 5; i <= 20; i += 5) {
     options.push(i);
   }
 

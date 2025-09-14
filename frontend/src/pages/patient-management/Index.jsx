@@ -24,7 +24,7 @@ const PatientManagement = () => {
   const [editingPatient, setEditingPatient] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(4);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [showItemsPerPageDropdown, setShowItemsPerPageDropdown] =
     useState(false);
 
