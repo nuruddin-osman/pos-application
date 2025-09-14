@@ -19,6 +19,7 @@ const BillingAndInvoicing = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [earningAmount, setEarningAmount] = useState("");
 
   const [formData, setFormData] = useState({
     patientId: "",
@@ -38,18 +39,6 @@ const BillingAndInvoicing = () => {
     quantity: 1,
   });
 
-  //Total amount calculate
-  useEffect(() => {
-    const total = formData.services.reduce((sum, service) => {
-      return sum + Number(service.price) * Number(service.quantity);
-    }, 0);
-
-    setFormData((prev) => ({
-      ...prev,
-      totalAmount: total,
-    }));
-  }, [formData.services, formData.discount, formData.tax]);
-
   const addService = () => {
     if (!serviceForm.name || !serviceForm.price) {
       alert("সার্ভিসের নাম এবং দাম দিতে হবে");
@@ -58,7 +47,7 @@ const BillingAndInvoicing = () => {
 
     setFormData((prev) => ({
       ...prev,
-      services: [...prev.services, serviceForm], // service যোগ হচ্ছে
+      services: [...prev.services, serviceForm], // service
     }));
 
     // Reset input fields
@@ -158,6 +147,18 @@ const BillingAndInvoicing = () => {
     }
   };
 
+  const earningAmounts = async () => {
+    const response = await axios.get(
+      `http://localhost:4000/api/billing-invoice/dashboard/stats`
+    );
+    if (response.data) {
+      setEarningAmount(response.data);
+    }
+  };
+  useEffect(() => {
+    earningAmounts();
+  }, []);
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
@@ -198,13 +199,41 @@ const BillingAndInvoicing = () => {
         <div className="bg-white p-5 rounded-xl shadow-sm">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-700 font-open-sans">
+              মোট আয়
+            </h3>
+            <div className="p-3 bg-red-100 rounded-full">
+              <FaMoneyBillWave className="h-6 w-6 text-red-600" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 mt-3">
+            {earningAmount.totalPrice}
+          </p>
+        </div>
+        <div className="bg-white p-5 rounded-xl shadow-sm">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-gray-700 font-open-sans">
+              মোট
+            </h3>
+            <div className="p-3 bg-red-100 rounded-full">
+              <FaMoneyBillWave className="h-6 w-6 text-red-600" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 mt-3">
+            {earningAmount.totalNetAmount}
+          </p>
+        </div>
+        <div className="bg-white p-5 rounded-xl shadow-sm">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-gray-700 font-open-sans">
               মোট বকেয়া
             </h3>
             <div className="p-3 bg-red-100 rounded-full">
               <FaMoneyBillWave className="h-6 w-6 text-red-600" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-gray-900 mt-3">১২,৫০০ ৳</p>
+          <p className="text-3xl font-bold text-gray-900 mt-3">
+            {earningAmount.totalPendingAmount}
+          </p>
         </div>
 
         <div className="bg-white p-5 rounded-xl shadow-sm">
@@ -216,7 +245,9 @@ const BillingAndInvoicing = () => {
               <FaMoneyBillWave className="h-6 w-6 text-green-600" />
             </div>
           </div>
-          <p className="text-3xl font-bold text-gray-900 mt-3">৮,৭২০ ৳</p>
+          <p className="text-3xl font-bold text-gray-900 mt-3">
+            {earningAmount.todayIncome}
+          </p>
         </div>
 
         <div className="bg-white p-5 rounded-xl shadow-sm">
@@ -229,7 +260,7 @@ const BillingAndInvoicing = () => {
             </div>
           </div>
           <p className="text-3xl font-bold text-gray-900 mt-3">
-            {invoices.length}
+            {earningAmount.totalInvoices}
           </p>
         </div>
       </div>
