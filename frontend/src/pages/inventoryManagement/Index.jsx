@@ -19,7 +19,7 @@ const InventoryManagement = () => {
   const [inventory, setInventory] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [filterCategory, setFilterCategory] = useState("all");
+  const [stockItems, setStockItems] = useState({});
 
   //Query state
   const [searchTerm, setSearchTerm] = useState("");
@@ -74,6 +74,7 @@ const InventoryManagement = () => {
       });
       if (response.data) {
         setInventory(response.data.items);
+        inventorySummary();
       }
     } catch (error) {
       console.log(error);
@@ -175,15 +176,19 @@ const InventoryManagement = () => {
   };
 
   // ইনভেন্টরি সংক্ষিপ্ত তথ্য
-  const inventorySummary = {
-    totalItems: inventory.length,
-    lowStockItems: inventory.filter((item) => item.stock <= item.minStockLevel)
-      .length,
-    outOfStockItems: inventory.filter((item) => item.stock === 0).length,
-    totalValue: inventory.reduce(
-      (sum, item) => sum + item.stock * item.price,
-      0
-    ),
+
+  const inventorySummary = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/api/inventory/summary`
+      );
+
+      if (response.data) {
+        setStockItems(response.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -208,7 +213,7 @@ const InventoryManagement = () => {
             মোট আইটেম
           </h3>
           <p className="text-3xl font-bold text-gray-800">
-            {inventorySummary.totalItems}
+            {stockItems.totalItems}
           </p>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-yellow-500">
@@ -216,7 +221,7 @@ const InventoryManagement = () => {
             নিম্ন স্টক
           </h3>
           <p className="text-3xl font-bold text-gray-800">
-            {inventorySummary.lowStockItems}
+            {stockItems.lowStock}
           </p>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-red-500">
@@ -224,7 +229,7 @@ const InventoryManagement = () => {
             স্টক নেই
           </h3>
           <p className="text-3xl font-bold text-gray-800">
-            {inventorySummary.outOfStockItems}
+            {stockItems.outOfStockItems}
           </p>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500">
@@ -232,7 +237,7 @@ const InventoryManagement = () => {
             মোট মূল্য
           </h3>
           <p className="text-3xl font-bold text-gray-800">
-            ৳{inventorySummary.totalValue.toFixed(2)}
+            ৳{stockItems.stockPrice}
           </p>
         </div>
       </div>
