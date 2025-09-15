@@ -29,10 +29,6 @@ const InventoryManagement = () => {
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
 
-  const [sortConfig, setSortConfig] = useState({
-    key: null,
-    direction: "ascending",
-  });
   const [formData, setFormData] = useState({
     name: "",
     category: "medicine",
@@ -45,7 +41,7 @@ const InventoryManagement = () => {
   });
   const { showAlert } = useAlert();
 
-  // ক্যাটাগরি লিস্ট
+  // Category list
   const categories = [
     { value: "medicine", label: "ঔষধ" },
     { value: "equipment", label: "মেডিকেল সরঞ্জাম" },
@@ -53,6 +49,12 @@ const InventoryManagement = () => {
     { value: "surgical", label: "সার্জিক্যাল" },
     { value: "diagnostic", label: "ডায়াগনস্টিক" },
   ];
+
+  const categoryStats = stockItems.categoryStats || [];
+  console.log(categoryStats);
+
+  const selectedCategoryItems =
+    category === "all" ? null : categoryStats.find((c) => c._id === category);
 
   // get all inventory data
   const fetchInventory = async ({
@@ -180,7 +182,7 @@ const InventoryManagement = () => {
   const inventorySummary = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:4000/api/inventory/summary`
+        `http://localhost:4000/api/inventory/dashboard/stats`
       );
 
       if (response.data) {
@@ -213,7 +215,9 @@ const InventoryManagement = () => {
             মোট আইটেম
           </h3>
           <p className="text-3xl font-bold text-gray-800">
-            {stockItems.totalItems}
+            {category === "all"
+              ? stockItems.totalItems
+              : selectedCategoryItems?.count}
           </p>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-yellow-500">
@@ -221,7 +225,9 @@ const InventoryManagement = () => {
             নিম্ন স্টক
           </h3>
           <p className="text-3xl font-bold text-gray-800">
-            {stockItems.lowStock}
+            {category === "all"
+              ? stockItems.lowStockItems
+              : selectedCategoryItems?.lowStock}
           </p>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-red-500">
@@ -229,7 +235,9 @@ const InventoryManagement = () => {
             স্টক নেই
           </h3>
           <p className="text-3xl font-bold text-gray-800">
-            {stockItems.outOfStockItems}
+            {category === "all"
+              ? stockItems.outOfStockItems
+              : selectedCategoryItems?.outOfStock}
           </p>
         </div>
         <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500">
@@ -237,7 +245,10 @@ const InventoryManagement = () => {
             মোট মূল্য
           </h3>
           <p className="text-3xl font-bold text-gray-800">
-            ৳{stockItems.stockPrice}
+            ৳
+            {category === "all"
+              ? stockItems.totalValue
+              : selectedCategoryItems?.totalValue}
           </p>
         </div>
       </div>
