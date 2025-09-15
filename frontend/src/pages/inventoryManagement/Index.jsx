@@ -158,10 +158,19 @@ const InventoryManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("আপনি কি এই আইটেম ডিলিট করতে চান?")) {
-      const updatedInventory = inventory.filter((item) => item.id !== id);
-      setInventory(updatedInventory);
+  const handleDelete = async (id) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:4000/api/inventory/${id}`
+      );
+      if (response.data) {
+        showAlert("Success", "This items is deleted", "success");
+      } else {
+        showAlert("Error", "Something is wrong", "error");
+      }
+      fetchInventory("");
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -373,7 +382,7 @@ const InventoryManagement = () => {
                 }
                 return (
                   <tr
-                    key={item.id}
+                    key={item._id}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -427,7 +436,7 @@ const InventoryManagement = () => {
                       </button>
                       <button
                         className="text-red-600 hover:text-red-900"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item._id)}
                       >
                         <FaTrash className="inline mr-1" /> ডিলিট
                       </button>
