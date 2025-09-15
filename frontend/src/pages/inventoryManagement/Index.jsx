@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
   FaPlus,
@@ -12,14 +13,22 @@ import {
   FaArrowDown,
   FaEye,
 } from "react-icons/fa";
+import { useAlert } from "../../components/AlertMessage";
 
 const InventoryManagement = () => {
   const [inventory, setInventory] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [filterCategory, setFilterCategory] = useState("all");
-  const [lowStockFilter, setLowStockFilter] = useState(false);
+
+  //Query state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [category, setCategory] = useState("all");
+  const [lowStock, setLowStock] = useState(false);
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState("name");
+  const [sortOrder, setSortOrder] = useState("asc");
+
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "ascending",
@@ -34,6 +43,7 @@ const InventoryManagement = () => {
     minStockLevel: "",
     description: "",
   });
+  const { showAlert } = useAlert();
 
   // ক্যাটাগরি লিস্ট
   const categories = [
@@ -44,78 +54,51 @@ const InventoryManagement = () => {
     { value: "diagnostic", label: "ডায়াগনস্টিক" },
   ];
 
-  // নমুনা ডেটা
+  // get all inventory data
+  const fetchInventory = async ({
+    searchTerm = "",
+    category = "all",
+    lowStock = false,
+    sortBy = "name",
+    sortOrder = "asc",
+  }) => {
+    try {
+      const response = await axios.get(`http://localhost:4000/api/inventory`, {
+        params: {
+          search: searchTerm,
+          category: category,
+          lowStock: lowStock,
+          sortBy: sortBy,
+          sortOrder: sortOrder,
+        },
+      });
+      if (response.data) {
+        setInventory(response.data.items);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  // First time fetch api
   useEffect(() => {
-    const sampleInventory = [
-      {
-        id: 1,
-        name: "প্যারাসিটামল ট্যাবলেট",
-        category: "medicine",
-        stock: 150,
-        price: 5.5,
-        supplier: "স্কয়ার ফার্মা",
-        expiryDate: "২০২৪-১২-১৫",
-        minStockLevel: 50,
-        description: "৫০০ মিগ্রা, ১০০ ট্যাবলেট প্রতি প্যাক",
-      },
-      {
-        id: 2,
-        name: "স্যালাইন ড্রিপ",
-        category: "disposable",
-        stock: 75,
-        price: 85.0,
-        supplier: "অ্যাপোলো হসপিটালস",
-        expiryDate: "২০২৪-০৮-২০",
-        minStockLevel: 30,
-        description: "৫০০ মিলি, স্টেরাইল",
-      },
-      {
-        id: 3,
-        name: "স্ট্রেচার",
-        category: "equipment",
-        stock: 5,
-        price: 12500.0,
-        supplier: "মেডিকেল ইকুইপমেন্ট লিমিটেড",
-        expiryDate: "N/A",
-        minStockLevel: 2,
-        description: "এডজাস্টেবল হাইট, অ্যালুমিনিয়াম ফ্রেম",
-      },
-      {
-        id: 4,
-        name: "ব্লাড প্রেশার মনিটর",
-        category: "diagnostic",
-        stock: 8,
-        price: 3500.0,
-        supplier: "ওমরন হেলথকের",
-        expiryDate: "২০২৫-০৩-১০",
-        minStockLevel: 5,
-        description: "ডিজিটাল, আপার আর্ম",
-      },
-      {
-        id: 5,
-        name: "সার্জিক্যাল গ্লাভস",
-        category: "surgical",
-        stock: 25,
-        price: 120.0,
-        supplier: "আনসেল কর্পোরেশন",
-        expiryDate: "২০২৪-১১-০৫",
-        minStockLevel: 40,
-        description: "লেটেক্স ফ্রি, স্টেরাইল, সাইজ M",
-      },
-      {
-        id: 6,
-        name: "অ্যামোক্সিসিলিন ক্যাপসুল",
-        category: "medicine",
-        stock: 45,
-        price: 8.75,
-        supplier: "বেক্সিমকো ফার্মা",
-        expiryDate: "২০২৪-০৯-৩০",
-        minStockLevel: 60,
-        description: "৫০০ মিগ্রা, ১০ ক্যাপসুল স্ট্রিপ",
-      },
-    ];
-    setInventory(sampleInventory);
+    fetchInventory({ search: "", category, lowStock, page, sortBy, sortOrder });
   }, []);
+
+  // Search term change in debounce with fetch
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchInventory({
+        searchTerm,
+        category,
+        lowStock,
+        page,
+        sortBy,
+        sortOrder,
+      });
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, category, lowStock, page, sortBy, sortOrder]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -125,25 +108,35 @@ const InventoryManagement = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingItem) {
-      // এডিট মোড
-      const updatedInventory = inventory.map((item) =>
-        item.id === editingItem.id ? { ...formData, id: editingItem.id } : item
-      );
-      setInventory(updatedInventory);
-    } else {
-      // নতুন আইটেম যোগ করুন
-      const newItem = {
-        id: inventory.length + 1,
-        ...formData,
-        stock: parseInt(formData.stock),
-        price: parseFloat(formData.price),
-        minStockLevel: parseInt(formData.minStockLevel),
-      };
-      setInventory([...inventory, newItem]);
+
+    try {
+      if (editingItem) {
+        const response = await axios.put(
+          `http://localhost:4000/api/inventory/${editingItem._id}`,
+          formData
+        );
+        if (response.data) {
+          showAlert("Success", "Inventory item  update success", "success");
+        } else {
+          showAlert("Error", "Something weint wrong", "error");
+        }
+      } else {
+        const response = await axios.post(
+          `http://localhost:4000/api/inventory`,
+          formData
+        );
+        if (response.data) {
+          showAlert("Success", "New inventory item created", "success");
+        } else {
+          showAlert("Error", "Something weint wrong", "error");
+        }
+      }
+    } catch (error) {
+      console.log(error);
     }
+
     setIsModalOpen(false);
     setFormData({
       name: "",
@@ -155,6 +148,7 @@ const InventoryManagement = () => {
       minStockLevel: "",
       description: "",
     });
+    fetchInventory("");
     setEditingItem(null);
   };
 
@@ -168,56 +162,6 @@ const InventoryManagement = () => {
     if (window.confirm("আপনি কি এই আইটেম ডিলিট করতে চান?")) {
       const updatedInventory = inventory.filter((item) => item.id !== id);
       setInventory(updatedInventory);
-    }
-  };
-
-  const handleSort = (key) => {
-    let direction = "ascending";
-    if (sortConfig.key === key && sortConfig.direction === "ascending") {
-      direction = "descending";
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const sortedInventory = React.useMemo(() => {
-    let sortableItems = [...inventory];
-    if (sortConfig.key !== null) {
-      sortableItems.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableItems;
-  }, [inventory, sortConfig]);
-
-  const filteredInventory = sortedInventory.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.supplier.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      filterCategory === "all" || item.category === filterCategory;
-    const matchesLowStock = !lowStockFilter || item.stock <= item.minStockLevel;
-
-    return matchesSearch && matchesCategory && matchesLowStock;
-  });
-
-  const getCategoryLabel = (categoryValue) => {
-    const category = categories.find((cat) => cat.value === categoryValue);
-    return category ? category.label : categoryValue;
-  };
-
-  const getStockStatus = (stock, minStockLevel) => {
-    if (stock === 0) {
-      return { text: "স্টক নেই", class: "bg-red-100 text-red-800" };
-    } else if (stock <= minStockLevel) {
-      return { text: "নিম্ন স্টক", class: "bg-yellow-100 text-yellow-800" };
-    } else {
-      return { text: "স্টক আছে", class: "bg-green-100 text-green-800" };
     }
   };
 
@@ -306,8 +250,8 @@ const InventoryManagement = () => {
                 <FaFilter className="text-gray-400" />
               </div>
               <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
                 className="block pl-10 pr-10 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">সব ক্যাটাগরি</option>
@@ -322,8 +266,8 @@ const InventoryManagement = () => {
             <label className="inline-flex items-center mt-2 sm:mt-0">
               <input
                 type="checkbox"
-                checked={lowStockFilter}
-                onChange={(e) => setLowStockFilter(e.target.checked)}
+                checked={lowStock}
+                onChange={(e) => setLowStock(e.target.checked)}
                 className="form-checkbox h-5 w-5 text-blue-600"
               />
               <span className="ml-2 text-gray-700">শুধু নিম্ন স্টক দেখান</span>
@@ -341,16 +285,13 @@ const InventoryManagement = () => {
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider font-open-sans cursor-pointer"
-                  onClick={() => handleSort("name")}
+                  onClick={() => {
+                    setSortBy("name");
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  }}
                 >
                   <div className="flex items-center">
-                    নাম
-                    {sortConfig.key === "name" &&
-                      (sortConfig.direction === "ascending" ? (
-                        <FaArrowUp className="ml-1" />
-                      ) : (
-                        <FaArrowDown className="ml-1" />
-                      ))}
+                    নাম {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
                   </div>
                 </th>
                 <th
@@ -362,31 +303,27 @@ const InventoryManagement = () => {
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider font-open-sans cursor-pointer"
-                  onClick={() => handleSort("stock")}
+                  onClick={() => {
+                    setSortBy("stock");
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  }}
                 >
                   <div className="flex items-center">
-                    স্টক
-                    {sortConfig.key === "stock" &&
-                      (sortConfig.direction === "ascending" ? (
-                        <FaArrowUp className="ml-1" />
-                      ) : (
-                        <FaArrowDown className="ml-1" />
-                      ))}
+                    স্টক{" "}
+                    {sortBy === "stock" && (sortOrder === "asc" ? "↑" : "↓")}
                   </div>
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider font-open-sans cursor-pointer"
-                  onClick={() => handleSort("price")}
+                  onClick={() => {
+                    setSortBy("price");
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  }}
                 >
                   <div className="flex items-center">
-                    দাম
-                    {sortConfig.key === "price" &&
-                      (sortConfig.direction === "ascending" ? (
-                        <FaArrowUp className="ml-1" />
-                      ) : (
-                        <FaArrowDown className="ml-1" />
-                      ))}
+                    দাম{" "}
+                    {sortBy === "price" && (sortOrder === "asc" ? "↑" : "↓")}
                   </div>
                 </th>
                 <th
@@ -416,11 +353,24 @@ const InventoryManagement = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredInventory.map((item) => {
-                const stockStatus = getStockStatus(
-                  item.stock,
-                  item.minStockLevel
-                );
+              {inventory.map((item) => {
+                let stockStatus = {};
+                if (item.stock === 0) {
+                  stockStatus = {
+                    text: "স্টক শেষ",
+                    class: "bg-red-100 text-red-800",
+                  };
+                } else if (item.stock <= item.minStockLevel) {
+                  stockStatus = {
+                    text: "লো স্টক",
+                    class: "bg-yellow-100 text-yellow-800",
+                  };
+                } else {
+                  stockStatus = {
+                    text: "স্টক আছে",
+                    class: "bg-green-100 text-green-800",
+                  };
+                }
                 return (
                   <tr
                     key={item.id}
@@ -442,7 +392,7 @@ const InventoryManagement = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {getCategoryLabel(item.category)}
+                      {item.category}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       <div>
@@ -488,7 +438,7 @@ const InventoryManagement = () => {
             </tbody>
           </table>
         </div>
-        {filteredInventory.length === 0 && (
+        {inventory.length === 0 && (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center rounded-full bg-gray-100 p-4 mb-4">
               <FaBox className="h-12 w-12 text-gray-400" />
