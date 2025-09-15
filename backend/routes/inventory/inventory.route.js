@@ -7,11 +7,15 @@ const {
   updateInventoryItem,
   stockUpdateInventory,
   deleteInventory,
+  getInventorySummary,
 } = require("../../controllers/inventoryController/inventoryController");
 const router = express.Router();
 
 // get all items
 router.get("/", getInventoryItems);
+
+// Inventory stock summary api
+router.get("/summary", getInventorySummary);
 
 // get single items
 router.get("/:id", getInventoryItem);

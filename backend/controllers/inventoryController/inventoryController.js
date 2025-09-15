@@ -101,6 +101,34 @@ const createInventoryItems = async (req, res) => {
   }
 };
 
+// Inventory stock summary controller
+// Summary
+const getInventorySummary = async (req, res) => {
+  try {
+    const inventory = await InventoryItem.find();
+    const totalItems = inventory.length;
+    let lowStock = inventory.filter(
+      (item) => item.stock <= item.minStockLevel
+    ).length;
+    const outOfStockItems = inventory.filter((item) => item.stock === 0).length;
+
+    const stockPrice = inventory.reduce(
+      (prev_sum_val, current_val) =>
+        prev_sum_val + current_val.stock * current_val.price,
+      0
+    );
+
+    res.status(200).json({
+      totalItems,
+      lowStock,
+      outOfStockItems,
+      stockPrice,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // update items controller
 const updateInventoryItem = async (req, res) => {
   try {
@@ -190,4 +218,5 @@ module.exports = {
   updateInventoryItem,
   stockUpdateInventory,
   deleteInventory,
+  getInventorySummary,
 };
