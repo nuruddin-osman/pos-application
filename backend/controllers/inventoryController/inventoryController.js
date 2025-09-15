@@ -101,34 +101,6 @@ const createInventoryItems = async (req, res) => {
   }
 };
 
-// Inventory stock summary controller
-// Summary
-const getInventorySummary = async (req, res) => {
-  try {
-    const inventory = await InventoryItem.find();
-    const totalItems = inventory.length;
-    let lowStock = inventory.filter(
-      (item) => item.stock <= item.minStockLevel
-    ).length;
-    const outOfStockItems = inventory.filter((item) => item.stock === 0).length;
-
-    const stockPrice = inventory.reduce(
-      (prev_sum_val, current_val) =>
-        prev_sum_val + current_val.stock * current_val.price,
-      0
-    );
-
-    res.status(200).json({
-      totalItems,
-      lowStock,
-      outOfStockItems,
-      stockPrice,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 // update items controller
 const updateInventoryItem = async (req, res) => {
   try {
@@ -211,6 +183,58 @@ const deleteInventory = async (req, res) => {
   }
 };
 
+// get Dashboard Stats summary controller
+const getDashboardStats = async (req, res) => {
+  try {
+    const totalItems = await InventoryItem.countDocuments();
+
+    // minimum stock items
+    const lowStockItems = await InventoryItem.find({
+      $expr: { $lte: ["$stock", "$minStockLevel"] },
+    });
+
+    // out of stock items
+    const outOfStockItems = await InventoryItem.find({ stock: 0 });
+
+    // total price of inventorty
+    const allItems = await InventoryItem.find({});
+    const totalValue = allItems.reduce((sum, item) => {
+      return sum + item.stock * item.price;
+    }, 0);
+
+    // category based items number
+    const categoryStats = await InventoryItem.aggregate([
+      {
+        $group: {
+          _id: "$category",
+          count: { $sum: 1 },
+          totalValue: { $sum: { $multiply: ["$stock", "$price"] } },
+          lowStock: {
+            $sum: {
+              $cond: [{ $lte: ["$stock", "$minStockLevel"] }, 1, 0],
+            },
+          },
+          outOfStock: {
+            $sum: {
+              $cond: [{ $eq: ["$stock", 0] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]);
+
+    res.json({
+      totalItems,
+      lowStockItems: lowStockItems.length,
+      outOfStockItems: outOfStockItems.length,
+      totalValue,
+      categoryStats,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getInventoryItems,
   getInventoryItem,
@@ -218,5 +242,5 @@ module.exports = {
   updateInventoryItem,
   stockUpdateInventory,
   deleteInventory,
-  getInventorySummary,
+  getDashboardStats,
 };
