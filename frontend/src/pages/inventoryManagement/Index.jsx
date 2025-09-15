@@ -14,6 +14,9 @@ import {
   FaEye,
 } from "react-icons/fa";
 import { useAlert } from "../../components/AlertMessage";
+import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
+import ItemsPerPageSelector from "../../components/ItemsPerPageSelector";
+import PaginationControls from "../../components/PaginationControls";
 
 const InventoryManagement = () => {
   const [inventory, setInventory] = useState([]);
@@ -28,6 +31,11 @@ const InventoryManagement = () => {
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [showItemsPerPageDropdown, setShowItemsPerPageDropdown] =
+    useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -51,8 +59,6 @@ const InventoryManagement = () => {
   ];
 
   const categoryStats = stockItems.categoryStats || [];
-  console.log(categoryStats);
-
   const selectedCategoryItems =
     category === "all" ? null : categoryStats.find((c) => c._id === category);
 
@@ -193,6 +199,25 @@ const InventoryManagement = () => {
     }
   };
 
+  // Pagination calculation
+  const startOffset = currentPage * itemsPerPage;
+  const endOffset = startOffset + itemsPerPage;
+  const pageCount = Math.ceil(inventory.length / itemsPerPage);
+  const currentInvoices = inventory.slice(startOffset, endOffset);
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  // Items per page options
+  const itemsPerPageOptions = getItemsPerPageOptions();
+
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(value);
+    setCurrentPage(0); // Reset to first page when changing items per page
+    setShowItemsPerPageDropdown(false);
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
@@ -301,6 +326,17 @@ const InventoryManagement = () => {
         </div>
       </div>
 
+      {/* Items per page selector */}
+      <ItemsPerPageSelector
+        totalItems={inventory.length}
+        itemsPerPage={itemsPerPage}
+        itemsPerPageOptions={itemsPerPageOptions}
+        showDropdown={showItemsPerPageDropdown}
+        setShowDropdown={setShowItemsPerPageDropdown}
+        handleItemsPerPageChange={handleItemsPerPageChange}
+        label="মোট আইটেম"
+      />
+
       {/* ইনভেন্টরি টেবিল */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -378,7 +414,7 @@ const InventoryManagement = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {inventory.map((item) => {
+              {currentInvoices.map((item) => {
                 let stockStatus = {};
                 if (item.stock === 0) {
                   stockStatus = {
@@ -477,6 +513,17 @@ const InventoryManagement = () => {
           </div>
         )}
       </div>
+
+      {/* pagination controlls */}
+      <PaginationControls
+        currentPage={currentPage}
+        startOffset={startOffset}
+        endOffset={endOffset}
+        totalItems={inventory.length}
+        pageCount={pageCount}
+        handlePageClick={handlePageClick}
+        label="Item"
+      />
 
       {/* মডাল ফর্ম */}
       {isModalOpen && (

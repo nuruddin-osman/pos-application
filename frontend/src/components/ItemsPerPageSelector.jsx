@@ -7,12 +7,12 @@ const ItemsPerPageSelector = ({
   showDropdown,
   setShowDropdown,
   handleItemsPerPageChange,
-  label = "মোট আইটেম",
+  label,
 }) => {
   return (
     <div className="flex justify-between items-center p-4 border-b border-gray-200">
       <div className="text-sm text-gray-600">
-        {label}: {totalItems} জন
+        {label}: {totalItems}
       </div>
 
       <div className="relative">

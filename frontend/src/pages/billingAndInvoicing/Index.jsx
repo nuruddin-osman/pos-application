@@ -15,6 +15,8 @@ import {
 import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
 import ReactPaginate from "react-paginate";
 import { useAlert } from "../../components/AlertMessage";
+import ItemsPerPageSelector from "../../components/ItemsPerPageSelector";
+import PaginationControls from "../../components/PaginationControls";
 
 const BillingAndInvoicing = () => {
   const [invoices, setInvoices] = useState([]);
@@ -321,41 +323,15 @@ const BillingAndInvoicing = () => {
       </div>
 
       {/* Items per page selector */}
-      <div className="flex justify-between items-center p-4 border-b border-gray-200">
-        <div className="text-sm text-gray-600">
-          মোট রোগী: {invoices.length} জন
-        </div>
-
-        <div className="relative">
-          <button
-            className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-            onClick={() =>
-              setShowItemsPerPageDropdown(!showItemsPerPageDropdown)
-            }
-          >
-            <FaCog className="mr-2" />
-            প্রতি পেজে: {itemsPerPage}
-          </button>
-
-          {showItemsPerPageDropdown && (
-            <div className="origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-              <div className="py-1" role="menu" aria-orientation="vertical">
-                {itemsPerPageOptions.map((option) => (
-                  <button
-                    key={option}
-                    className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left ${
-                      itemsPerPage === option ? "bg-blue-100 text-blue-800" : ""
-                    }`}
-                    onClick={() => handleItemsPerPageChange(option)}
-                  >
-                    {option} টি আইটেম
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <ItemsPerPageSelector
+        totalItems={invoices.length}
+        itemsPerPage={itemsPerPage}
+        itemsPerPageOptions={itemsPerPageOptions}
+        showDropdown={showItemsPerPageDropdown}
+        setShowDropdown={setShowItemsPerPageDropdown}
+        handleItemsPerPageChange={handleItemsPerPageChange}
+        label="মোট আইটেম"
+      />
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -492,45 +468,16 @@ const BillingAndInvoicing = () => {
         )}
       </div>
 
-      {/* Pagination Controls */}
-      <div className="xl:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-end xl:justify-between">
-        <div className="hidden xl:block text-sm text-gray-700 mb-4 sm:mb-0">
-          দেখানো হচ্ছে <span className="font-medium">{startOffset + 1}</span>{" "}
-          থেকে{" "}
-          <span className="font-medium">
-            {Math.min(endOffset, invoices.length)}
-          </span>{" "}
-          এর মধ্যে, মোট <span className="font-medium">{invoices.length}</span>{" "}
-          রোগী
-        </div>
-
-        <ReactPaginate
-          previousLabel={"পূর্বের"}
-          nextLabel={"পরের"}
-          breakLabel={"..."}
-          pageCount={pageCount}
-          marginPagesDisplayed={2}
-          pageRangeDisplayed={5}
-          onPageChange={handlePageClick}
-          containerClassName={"flex items-center space-x-2"}
-          pageClassName={
-            "py-2 rounded border border-gray-300 hover:bg-gray-50 cursor-pointer"
-          }
-          pageLinkClassName={"text-gray-700 px-5 py-3"}
-          previousClassName={
-            "py-2 rounded border border-gray-300 hover:bg-gray-50  cursor-pointer"
-          }
-          previousLinkClassName={"text-gray-700 px-5 py-3"}
-          nextClassName={
-            "py-2 rounded border border-gray-300 hover:bg-gray-50  cursor-pointer"
-          }
-          nextLinkClassName={"text-gray-700 px-5 py-3"}
-          breakClassName={"px-3 py-2"}
-          activeClassName={"bg-blue-500 text-white border-blue-500"}
-          disabledClassName={"opacity-50 cursor-not-allowed"}
-          forcePage={currentPage}
-        />
-      </div>
+      {/* pagination controlls */}
+      <PaginationControls
+        currentPage={currentPage}
+        startOffset={startOffset}
+        endOffset={endOffset}
+        totalItems={invoices.length}
+        pageCount={pageCount}
+        handlePageClick={handlePageClick}
+        label="Invoice"
+      />
 
       {/* নতুন বিল মডাল */}
       {isInvoiceModalOpen && (
