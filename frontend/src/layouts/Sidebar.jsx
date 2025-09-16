@@ -22,7 +22,7 @@ const Sidebar = ({ activePage, setActivePage }) => {
       id: 1,
       name: "রোগী ব্যবস্থাপনা",
       icon: <FaUserInjured className="text-xl" />,
-      color: "rgb(59, 130, 246)",
+      color: "#6F00FF",
     },
     {
       id: 2,
@@ -47,6 +47,12 @@ const Sidebar = ({ activePage, setActivePage }) => {
       name: "রিপোর্টিং",
       icon: <FaChartBar className="text-xl" />,
       color: "rgb(236, 72, 153)",
+    },
+    {
+      id: 6,
+      name: "Docotrs",
+      icon: <FaChartBar className="text-xl" />,
+      color: "#3B0270",
     },
   ];
 

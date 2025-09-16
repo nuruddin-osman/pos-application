@@ -8,6 +8,7 @@ import Reporting from "../pages/reporting/Index";
 import AdminProfile from "../pages/admin-pannel/Index";
 import Logo from "../assets/image/logo/logo.webp";
 import Avater from "../assets/image/logo/avater.png";
+import DoctorsManagement from "../pages/doctors/Index";
 
 const RootLayout = () => {
   const [activePage, setActivePage] = useState("রোগী ব্যবস্থাপনা");
@@ -30,6 +31,8 @@ const RootLayout = () => {
         return <Reporting />;
       case "অ্যাডমিন প্রোফাইল":
         return <AdminProfile />;
+      case "Docotrs":
+        return <DoctorsManagement />;
       default:
         return <PatientManagement />;
     }
