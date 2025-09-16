@@ -14,8 +14,8 @@ const {
   generatePatientReport,
 } = require("../../middleware/reporting/patientReport");
 const Appointment = require("../../models/appointment/appointment.model");
-const Patients = require("../../models/appointment/patients.model");
 const InventoryItem = require("../../models/inventory/inventory.model");
+const PaientsManagement = require("../../models/patient-management/patient_management.model");
 const Report = require("../../models/reporting/reporting.model");
 const Transaction = require("../../models/reporting/transaction.model");
 
@@ -179,12 +179,12 @@ const getDashBoardSummary = async (req, res) => {
     ]);
 
     // আজকের রোগী
-    const todayPatients = await Patients.countDocuments({
+    const todayPatients = await PaientsManagement.countDocuments({
       createdAt: { $gte: today, $lt: tomorrow },
     });
 
     // মাসিক রোগী
-    const monthlyPatients = await Patients.countDocuments({
+    const monthlyPatients = await PaientsManagement.countDocuments({
       createdAt: { $gte: thirtyDaysAgo },
     });
 

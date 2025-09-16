@@ -1,5 +1,5 @@
 const Appointment = require("../../models/appointment/appointment.model");
-const Patients = require("../../models/appointment/patients.model");
+const PaientsManagement = require("../../models/patient-management/patient_management.model");
 const {
   getAppointmentStatusCount,
 } = require("../appointment/appointmentStatusCount");
@@ -21,7 +21,7 @@ exports.generatePatientReport = async (
     //在实际应用中, এটি ডিপার্টমেন্ট দ্বারা ফিল্টার করবে
   }
 
-  const patients = await Patients.find(query);
+  const patients = await PaientsManagement.find(query);
   const appointments = await Appointment.find({
     date: { $gte: startDate, $lte: endDate },
   }).populate("patientId", "name gender dateOfBirth");
@@ -54,7 +54,7 @@ exports.generatePatientReport = async (
   ]);
 
   // বয়স গ্রুপ অনুযায়ী রোগী
-  const ageGroups = await Patients.aggregate([
+  const ageGroups = await PaientsManagement.aggregate([
     {
       $match: query,
     },
@@ -109,7 +109,7 @@ exports.generatePatientReport = async (
   ]);
 
   // লিঙ্গ অনুযায়ী রোগী
-  const genderDistribution = await Patients.aggregate([
+  const genderDistribution = await PaientsManagement.aggregate([
     {
       $match: query,
     },

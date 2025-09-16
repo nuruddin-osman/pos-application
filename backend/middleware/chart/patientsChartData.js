@@ -1,9 +1,9 @@
-const Patients = require("../../models/appointment/patients.model");
+const PaientsManagement = require("../../models/patient-management/patient_management.model");
 
 exports.getPatientsChartData = async (period) => {
   const dateFormat = period === "monthly" ? "YYYY-MM" : "YYYY-MM-DD";
 
-  const patientData = await Patients.aggregate([
+  const patientData = await PaientsManagement.aggregate([
     {
       $match: {
         createdAt: {

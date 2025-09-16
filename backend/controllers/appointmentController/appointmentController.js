@@ -1,5 +1,6 @@
 const Appointment = require("../../models/appointment/appointment.model");
-const Doctors = require("../../models/appointment/doctor.model");
+const Doctor = require("../../models/doctors/doctors.model");
+
 const PaientsManagement = require("../../models/patient-management/patient_management.model");
 
 const getAllAppointment = async (req, res) => {
@@ -82,8 +83,8 @@ const createAppointment = async (req, res) => {
       req.body;
 
     // DD-MM-YYYY কে Date Object-এ convert করুন
-    const [day, month, year] = date.split("-");
-    const dateObject = new Date(`${year}-${month}-${day}`);
+    // const [day, month, year] = date.split("-");
+    const dateObject = new Date();
 
     // appointment ID generate
     const appointmentCount = await Appointment.countDocuments();
@@ -133,7 +134,7 @@ const createAppointment = async (req, res) => {
       .populate("patientId", "name phone")
       .populate("doctorId", "name specialization");
 
-    res.status(201).json(populatedAppointment);
+    res.status(201).json({ populatedAppointment, savedAppointment });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -247,7 +248,7 @@ const getDoctorsAvility = async (req, res) => {
     });
 
     // Doctors availability check
-    const doctor = await Doctors.findById(doctorId);
+    const doctor = await Doctor.findById(doctorId);
     if (!doctor) {
       return res.status(404).json({ message: "ডাক্তার পাওয়া যায়নি" });
     }
