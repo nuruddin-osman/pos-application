@@ -4,10 +4,11 @@ const patientManagementRouter = require("./routes/patient-management/patient_man
 const billingInvoiceRouter = require("./routes/billingAndInvoice/billingAndInvoice.route");
 const inventortyRouter = require("./routes/inventory/inventory.route");
 const appointmentRouter = require("./routes/appointment/appointment.route");
-const doctorsRouter = require("./routes/appointment/doctors.route");
-const patientAppointmentRouter = require("./routes/appointment/patients.route");
+// const doctorsRouter = require("./routes/appointment/doctors.route");
+// const patientAppointmentRouter = require("./routes/appointment/patients.route");
 const reportRouter = require("./routes/reporting/reporting.route");
 const adminRouter = require("./routes/admin/admin.route");
+const doctrosRouter = require("./routes/doctors/doctors.route");
 require("dotenv").config();
 require("./config/database");
 
@@ -27,10 +28,11 @@ app.use("/api/patients", patientManagementRouter);
 app.use("/api/billing-invoice", billingInvoiceRouter);
 app.use("/api/inventory", inventortyRouter);
 app.use("/api/appointments", appointmentRouter);
-app.use("/api/doctors", doctorsRouter);
-app.use("/api/patients-appointment", patientAppointmentRouter);
+// app.use("/api/doctors", doctorsRouter);
+// app.use("/api/patients-appointment", patientAppointmentRouter);
 app.use("/api/reports", reportRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/doctors", doctrosRouter);
 
 //routes error handller
 app.use((req, res, next) => {
