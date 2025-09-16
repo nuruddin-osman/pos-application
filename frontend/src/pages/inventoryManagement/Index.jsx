@@ -110,6 +110,7 @@ const InventoryManagement = () => {
         sortBy,
         sortOrder,
       });
+      setCurrentPage(0);
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);

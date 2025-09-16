@@ -15,13 +15,25 @@ import {
   FaStar,
   FaIdCard,
 } from "react-icons/fa";
+import { useAlert } from "../../components/AlertMessage";
+import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
+import ItemsPerPageSelector from "../../components/ItemsPerPageSelector";
+import PaginationControls from "../../components/PaginationControls";
 
 const DoctorsManagement = () => {
   const [doctors, setDoctors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterSpecialization, setFilterSpecialization] = useState("all");
+  const [availabilities, setAvailabilities] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState(null);
+
+  //pagination perpose
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [showItemsPerPageDropdown, setShowItemsPerPageDropdown] =
+    useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     specialization: "",
@@ -34,6 +46,8 @@ const DoctorsManagement = () => {
     bio: "",
     address: "",
   });
+
+  const { showAlert } = useAlert();
 
   // বিশেষত্বের লিস্ট
   const specializations = [
@@ -78,6 +92,7 @@ const DoctorsManagement = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchDoctors({ searchTerm, filterSpecialization });
+      setCurrentPage(0);
     }, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, filterSpecialization]);
@@ -90,26 +105,34 @@ const DoctorsManagement = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingDoctor) {
-      // এডিট মোড
-      const updatedDoctors = doctors.map((doctor) =>
-        doctor.id === editingDoctor.id
-          ? { ...formData, id: editingDoctor.id }
-          : doctor
-      );
-      setDoctors(updatedDoctors);
-    } else {
-      // নতুন ডাক্তার যোগ করুন
-      const newDoctor = {
-        id: doctors.length + 1,
-        ...formData,
-        joinDate: new Date().toLocaleDateString("bn-BD"),
-        rating: 4.5,
-      };
-      setDoctors([...doctors, newDoctor]);
+    try {
+      if (editingDoctor) {
+        const response = await axios.put(
+          `http://localhost:4000/api/doctors/${editingDoctor._id}`,
+          formData
+        );
+        if (response.data) {
+          showAlert("Success", " doctors is updated", "success");
+        } else {
+          showAlert("Error", "Doctors is not updated", "error");
+        }
+      } else {
+        const response = await axios.post(
+          `http://localhost:4000/api/doctors`,
+          formData
+        );
+        if (response.data) {
+          showAlert("Success", "New doctors is created", "success");
+        } else {
+          showAlert("Error", "Doctors is not created", "error");
+        }
+      }
+    } catch (error) {
+      console.log(error);
     }
+
     setIsModalOpen(false);
     setFormData({
       name: "",
@@ -123,6 +146,7 @@ const DoctorsManagement = () => {
       bio: "",
       address: "",
     });
+    fetchDoctors("");
     setEditingDoctor(null);
   };
 
@@ -132,7 +156,21 @@ const DoctorsManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {};
+  const handleDelete = async (id) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:4000/api/doctors/${id}`
+      );
+      if (response.data) {
+        showAlert("Success", "this doctors is deleted", "success");
+        fetchDoctors("");
+      } else {
+        showAlert("Error", "Doctors is not delete", "error");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const getAvailabilityStatus = (status) => {
     switch (status) {
@@ -145,6 +183,25 @@ const DoctorsManagement = () => {
       default:
         return { text: "অজানা", class: "bg-gray-100 text-gray-800" };
     }
+  };
+
+  // Pagination calculation
+  const startOffset = currentPage * itemsPerPage;
+  const endOffset = startOffset + itemsPerPage;
+  const pageCount = Math.ceil(doctors.length / itemsPerPage);
+  const currentDoctors = doctors.slice(startOffset, endOffset);
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  // Items per page options
+  const itemsPerPageOptions = getItemsPerPageOptions();
+
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(value);
+    setCurrentPage(0); // Reset to first page when changing items per page
+    setShowItemsPerPageDropdown(false);
   };
 
   return (
@@ -205,9 +262,20 @@ const DoctorsManagement = () => {
         </div>
       </div>
 
+      {/* Items per page selector */}
+      <ItemsPerPageSelector
+        totalItems={doctors.length}
+        itemsPerPage={itemsPerPage}
+        itemsPerPageOptions={itemsPerPageOptions}
+        showDropdown={showItemsPerPageDropdown}
+        setShowDropdown={setShowItemsPerPageDropdown}
+        handleItemsPerPageChange={handleItemsPerPageChange}
+        label="মোট আইটেম"
+      />
+
       {/* ডাক্তার কার্ড গ্রিড */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {doctors.map((doctor) => {
+        {currentDoctors.map((doctor) => {
           const availabilityStatus = getAvailabilityStatus(doctor.availability);
           return (
             <div
@@ -299,7 +367,7 @@ const DoctorsManagement = () => {
                       <FaEdit />
                     </button>
                     <button
-                      onClick={() => handleDelete(doctor.id)}
+                      onClick={() => handleDelete(doctor._id)}
                       className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
                       title="ডিলিট করুন"
                     >
@@ -326,6 +394,17 @@ const DoctorsManagement = () => {
           </p>
         </div>
       )}
+
+      {/* pagination controlls */}
+      <PaginationControls
+        currentPage={currentPage}
+        startOffset={startOffset}
+        endOffset={endOffset}
+        totalItems={doctors.length}
+        pageCount={pageCount}
+        handlePageClick={handlePageClick}
+        label="Item"
+      />
 
       {/* ডাক্তার এডিট/অ্যাড মডাল */}
       {isModalOpen && (
