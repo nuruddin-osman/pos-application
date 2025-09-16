@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
   FaPlus,
@@ -11,6 +12,7 @@ import {
   FaStethoscope,
   FaNotesMedical,
 } from "react-icons/fa";
+import { useAlert } from "../../components/AlertMessage";
 
 const AppoientmentScheduling = () => {
   const [appointments, setAppointments] = useState([]);
@@ -31,97 +33,39 @@ const AppoientmentScheduling = () => {
     status: "scheduled",
     notes: "",
   });
+  const { showAlert } = useAlert();
 
-  // নমুনা ডেটা -在实际应用中，这将来自API
+  // get all data
+  const fetchAppointment = async (searchTerm = "") => {
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/api/appointments`,
+        {
+          params: {
+            search: searchTerm,
+          },
+        }
+      );
+      if (response.data) {
+        setAppointments(response.data.appointments);
+        console.log(response.data.appointments);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // First time load
   useEffect(() => {
-    const sampleDoctors = [
-      {
-        id: 1,
-        name: "ডাঃ আহমেদ হাসান",
-        specialization: "কার্ডিওলজিস্ট",
-        availableDays: ["সোম", "মঙ্গল", "বুধ", "বৃহস্পতি"],
-      },
-      {
-        id: 2,
-        name: "ডাঃ সুলতানা আক্তার",
-        specialization: "গাইনোকোলজিস্ট",
-        availableDays: ["মঙ্গল", "বুধ", "শুক্র", "শনি"],
-      },
-      {
-        id: 3,
-        name: "ডাঃ রফিকুল ইসলাম",
-        specialization: "অর্থোপেডিক সার্জন",
-        availableDays: ["সোম", "বুধ", "শুক্র", "রবি"],
-      },
-      {
-        id: 4,
-        name: "ডাঃ ফারহানা খান",
-        specialization: "পেডিয়াট্রিশিয়ান",
-        availableDays: ["সোম", "মঙ্গল", "বৃহস্পতি", "শনি"],
-      },
-    ];
+    fetchAppointment({ searchTerm: "" });
+  }, []);
 
-    const samplePatients = [
-      { id: 1, name: "রহিম মিয়া", phone: "01712345678" },
-      { id: 2, name: "সালমা খাতুন", phone: "01898765432" },
-      { id: 3, name: "আব্দুল্লাহ আল মামুন", phone: "01911223344" },
-      { id: 4, name: "নাসরিন আক্তার", phone: "01556789012" },
-    ];
-
-    const sampleAppointments = [
-      {
-        id: 1,
-        patientId: 1,
-        doctorId: 1,
-        date: "২০২৩-১১-১০",
-        time: "১০:৩০",
-        duration: "30",
-        reason: "হার্টের চেকআপ",
-        status: "confirmed",
-        notes: "রোগীর পূর্বে হার্ট অ্যাটাকের ইতিহাস আছে",
-        createdAt: "২০২৩-১১-০৫",
-      },
-      {
-        id: 2,
-        patientId: 2,
-        doctorId: 2,
-        date: "২০২৩-১১-১১",
-        time: "১১:০০",
-        duration: "45",
-        reason: "নিয়মিত চেকআপ",
-        status: "scheduled",
-        notes: "",
-        createdAt: "২০২৩-১১-০৬",
-      },
-      {
-        id: 3,
-        patientId: 3,
-        doctorId: 3,
-        date: "২০২৩-১১-১২",
-        time: "০৯:১৫",
-        duration: "60",
-        reason: "হাঁটুর ব্যথা",
-        status: "completed",
-        notes: "এক্স-রে রিপোর্ট নিয়ে আসতে বলেছেন",
-        createdAt: "২০২৩-১১-০৭",
-      },
-      {
-        id: 4,
-        patientId: 4,
-        doctorId: 4,
-        date: "২০২৩-১1-১০",
-        time: "১৪:০০",
-        duration: "30",
-        reason: "শিশুর জ্বর",
-        status: "cancelled",
-        notes: "রোগী বাড়িতে ভালো আছে, পরবর্তী সময়ে আসবে",
-        createdAt: "২০২৩-১১-০৮",
-      },
-    ];
-
-    setDoctors(sampleDoctors);
-    setPatients(samplePatients);
-    setAppointments(sampleAppointments);
+  // Per cahange load
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchAppointment(searchTerm);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
   }, []);
 
   const handleInputChange = (e) => {
@@ -347,9 +291,9 @@ const AppoientmentScheduling = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAppointments.map((appointment) => (
+              {appointments.map((appointment) => (
                 <tr
-                  key={appointment.id}
+                  key={appointment._id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap">

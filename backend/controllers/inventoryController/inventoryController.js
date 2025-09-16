@@ -7,8 +7,6 @@ const getInventoryItems = async (req, res) => {
       search,
       category,
       lowStock,
-      page = 1,
-      limit = 10,
       sortBy = "name",
       sortOrder = "asc",
     } = req.query;
@@ -38,17 +36,12 @@ const getInventoryItems = async (req, res) => {
     const sortOptions = {};
     sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
 
-    const items = await InventoryItem.find(query)
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .sort(sortOptions);
+    const items = await InventoryItem.find(query).sort(sortOptions);
 
     const total = await InventoryItem.countDocuments(query);
 
     res.json({
       items,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
       total,
     });
   } catch (error) {

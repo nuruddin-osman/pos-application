@@ -23,6 +23,8 @@ const InventoryManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [stockItems, setStockItems] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [expireItems, setExpireItems] = useState([]);
 
   //Query state
   const [searchTerm, setSearchTerm] = useState("");
@@ -70,6 +72,7 @@ const InventoryManagement = () => {
     sortBy = "name",
     sortOrder = "asc",
   }) => {
+    setLoading(true);
     try {
       const response = await axios.get(`http://localhost:4000/api/inventory`, {
         params: {
@@ -83,9 +86,12 @@ const InventoryManagement = () => {
       if (response.data) {
         setInventory(response.data.items);
         inventorySummary();
+        fetchExpiryAlerts();
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
   // First time fetch api
@@ -199,6 +205,19 @@ const InventoryManagement = () => {
     }
   };
 
+  //Expire date setup
+  const fetchExpiryAlerts = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:4000/api/inventory/alerts/expiry`
+      );
+      setExpireItems(res.data.expiringSoonItems);
+    } catch (err) {
+      console.error("Error fetching expiry alerts:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   // Pagination calculation
   const startOffset = currentPage * itemsPerPage;
   const endOffset = startOffset + itemsPerPage;
@@ -499,7 +518,7 @@ const InventoryManagement = () => {
             </tbody>
           </table>
         </div>
-        {inventory.length === 0 && (
+        {inventory.length === 0 && loading && (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center rounded-full bg-gray-100 p-4 mb-4">
               <FaBox className="h-12 w-12 text-gray-400" />

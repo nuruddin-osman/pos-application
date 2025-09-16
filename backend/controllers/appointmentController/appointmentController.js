@@ -1,10 +1,10 @@
 const Appointment = require("../../models/appointment/appointment.model");
 const Doctors = require("../../models/appointment/doctor.model");
-const Patients = require("../../models/appointment/patients.model");
+const PaientsManagement = require("../../models/patient-management/patient_management.model");
 
 const getAllAppointment = async (req, res) => {
   try {
-    const { search, date, doctor, status, page = 1, limit = 10 } = req.query;
+    const { search, date, doctor, status } = req.query;
 
     let query = {};
 
@@ -32,7 +32,7 @@ const getAllAppointment = async (req, res) => {
 
     // Filter with patients name or desease
     if (search) {
-      const patients = await Patients.find({
+      const patients = await PaientsManagement.find({
         name: { $regex: search, $options: "i" },
       });
 
@@ -45,16 +45,12 @@ const getAllAppointment = async (req, res) => {
     const appointments = await Appointment.find(query)
       .populate("patientId", "name phone")
       .populate("doctorId", "name specialization")
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
       .sort({ date: 1, time: 1 });
 
     const total = await Appointment.countDocuments(query);
 
     res.json({
       appointments,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
       total,
     });
   } catch (error) {
