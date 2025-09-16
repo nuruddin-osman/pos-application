@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
   FaPlus,
@@ -13,6 +12,14 @@ import {
   FaNotesMedical,
 } from "react-icons/fa";
 import { useAlert } from "../../components/AlertMessage";
+import {
+  fetchPatients,
+  fetchDoctors,
+  updateAppointment,
+  deleteAppointment,
+  updateAppointmentStatus,
+} from "../../components/AppointmentApiFetch";
+import axios from "axios";
 
 const AppoientmentScheduling = () => {
   const [appointments, setAppointments] = useState([]);
@@ -21,8 +28,12 @@ const AppoientmentScheduling = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [filterDoctor, setFilterDoctor] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { showAlert } = useAlert();
+
   const [formData, setFormData] = useState({
     patientId: "",
     doctorId: "",
@@ -33,10 +44,15 @@ const AppoientmentScheduling = () => {
     status: "scheduled",
     notes: "",
   });
-  const { showAlert } = useAlert();
 
-  // get all data
-  const fetchAppointment = async (searchTerm = "") => {
+  // সমস্ত ডেটা লোড করা
+  useEffect(() => {
+    loadAllData();
+    fetchAppointments("");
+  }, []);
+  console.log(appointments);
+
+  const fetchAppointments = async (searchTerm = "") => {
     try {
       const response = await axios.get(
         `http://localhost:4000/api/appointments`,
@@ -48,25 +64,60 @@ const AppoientmentScheduling = () => {
       );
       if (response.data) {
         setAppointments(response.data.appointments);
-        console.log(response.data.appointments);
+      } else {
+        showAlert("Error", "Data is not fetch", "error");
       }
     } catch (error) {
-      console.log(error);
+      console.error("অ্যাপয়েন্টমেন্ট ফেচ করতে সমস্যা:", error);
+      throw error;
     }
   };
 
-  // First time load
-  useEffect(() => {
-    fetchAppointment({ searchTerm: "" });
-  }, []);
+  const loadAllData = async () => {
+    setIsLoading(true);
+    try {
+      const [appointmentsData, patientsData, doctorsData] = await Promise.all([
+        fetchAppointments(),
+        fetchPatients(),
+        fetchDoctors(),
+      ]);
 
-  // Per cahange load
+      setAppointments(appointmentsData.appointments || []);
+      setPatients(patientsData.patients || []);
+      setDoctors(doctorsData.doctors || []);
+    } catch (error) {
+      showAlert("ডেটা লোড করতে সমস্যা হয়েছে", "error");
+      console.error("ডেটা লোড error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // সার্চ টার্ম পরিবর্তন হলে
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchAppointment(searchTerm);
+      // handleSearch();
+      fetchAppointments(searchTerm);
     }, 500);
+
     return () => clearTimeout(delayDebounceFn);
-  }, []);
+  }, [searchTerm, filterDate, filterDoctor, filterStatus]);
+
+  const handleSearch = async () => {
+    try {
+      const params = {};
+
+      if (searchTerm) params.search = searchTerm;
+      if (filterDate) params.date = filterDate;
+      if (filterDoctor) params.doctor = filterDoctor;
+      if (filterStatus) params.status = filterStatus;
+
+      const data = await fetchAppointments(params);
+      setAppointments(data.appointments || []);
+    } catch (error) {
+      console.error("সার্চ করতে সমস্যা:", error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -76,71 +127,109 @@ const AppoientmentScheduling = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingAppointment) {
-      // এডিট মোড
-      const updatedAppointments = appointments.map((appointment) =>
-        appointment.id === editingAppointment.id
-          ? { ...formData, id: editingAppointment.id }
-          : appointment
-      );
-      setAppointments(updatedAppointments);
-    } else {
-      // নতুন অ্যাপয়েন্টমেন্ট যোগ করুন
-      const newAppointment = {
-        id: appointments.length + 1,
-        ...formData,
-        createdAt: new Date().toLocaleDateString("bn-BD"),
-      };
-      setAppointments([...appointments, newAppointment]);
+    setIsLoading(true);
+
+    try {
+      if (editingAppointment) {
+        // এডিট মোড
+        const updatedAppointment = await updateAppointment(
+          editingAppointment._id,
+          formData
+        );
+        setAppointments(
+          appointments.map((apt) =>
+            apt._id === editingAppointment._id ? updatedAppointment : apt
+          )
+        );
+        showAlert("অ্যাপয়েন্টমেন্ট সফলভাবে আপডেট হয়েছে", "success");
+      } else {
+        // নতুন অ্যাপয়েন্টমেন্ট তৈরি করা
+
+        try {
+          const response = await axios.post(
+            `http://localhost:4000/api/appointments`,
+            formData
+          );
+          console.log(response.data);
+        } catch (error) {
+          console.error("অ্যাপয়েন্টমেন্ট তৈরি করতে সমস্যা:", error);
+          throw error;
+        }
+      }
+
+      setIsModalOpen(false);
+      setFormData({
+        patientId: "",
+        doctorId: "",
+        date: "",
+        time: "",
+        duration: "30",
+        reason: "",
+        status: "scheduled",
+        notes: "",
+      });
+      setEditingAppointment(null);
+    } catch (error) {
+      showAlert("অ্যাপয়েন্টমেন্ট সেভ করতে সমস্যা হয়েছে", "error");
+      console.error("সাবমিট error:", error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsModalOpen(false);
-    setFormData({
-      patientId: "",
-      doctorId: "",
-      date: "",
-      time: "",
-      duration: "30",
-      reason: "",
-      status: "scheduled",
-      notes: "",
-    });
-    setEditingAppointment(null);
   };
 
   const handleEdit = (appointment) => {
-    setFormData(appointment);
+    setFormData({
+      patientId: appointment.patientId._id || appointment.patientId,
+      doctorId: appointment.doctorId._id || appointment.doctorId,
+      date: appointment.date.split("T")[0], // ISO format থেকে date format
+      time: appointment.time,
+      duration: appointment.duration.toString(),
+      reason: appointment.reason,
+      status: appointment.status,
+      notes: appointment.notes || "",
+    });
     setEditingAppointment(appointment);
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("আপনি কি এই অ্যাপয়েন্টমেন্টটি ডিলিট করতে চান?")) {
-      const updatedAppointments = appointments.filter(
-        (appointment) => appointment.id !== id
-      );
-      setAppointments(updatedAppointments);
+      try {
+        await deleteAppointment(id);
+        setAppointments(
+          appointments.filter((appointment) => appointment._id !== id)
+        );
+        showAlert("অ্যাপয়েন্টমেন্ট সফলভাবে ডিলিট হয়েছে", "success");
+      } catch (error) {
+        showAlert("অ্যাপয়েন্টমেন্ট ডিলিট করতে সমস্যা হয়েছে", "error");
+        console.error("ডিলিট error:", error);
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    const updatedAppointments = appointments.map((appointment) =>
-      appointment.id === id
-        ? { ...appointment, status: newStatus }
-        : appointment
-    );
-    setAppointments(updatedAppointments);
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const updatedAppointment = await updateAppointmentStatus(id, newStatus);
+      setAppointments(
+        appointments.map((apt) => (apt._id === id ? updatedAppointment : apt))
+      );
+      showAlert("স্ট্যাটাস সফলভাবে আপডেট হয়েছে", "success");
+    } catch (error) {
+      showAlert("স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে", "error");
+      console.error("স্ট্যাটাস change error:", error);
+    }
   };
 
-  const getPatientName = (patientId) => {
-    const patient = patients.find((p) => p.id === parseInt(patientId));
-    return patient ? patient.name : "অজানা রোগী";
+  const getPatientName = (patient) => {
+    if (!patient) return "অজানা রোগী";
+    return typeof patient === "object" ? patient.name : "অজানা রোগী";
   };
 
-  const getDoctorName = (doctorId) => {
-    const doctor = doctors.find((d) => d.id === parseInt(doctorId));
-    return doctor ? doctor.name : "অজানা ডাক্তার";
+  const getDoctorName = (doctor) => {
+    if (!doctor) return "অজানা ডাক্তার";
+    return typeof doctor === "object" ? doctor.name : "অজানা ডাক্তার";
   };
 
   const getStatusBadge = (status) => {
@@ -162,24 +251,16 @@ const AppoientmentScheduling = () => {
     );
   };
 
-  const filteredAppointments = appointments.filter((appointment) => {
-    const matchesSearch =
-      getPatientName(appointment.patientId)
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      getDoctorName(appointment.doctorId)
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      appointment.reason.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesDate = filterDate ? appointment.date === filterDate : true;
-    const matchesDoctor = filterDoctor
-      ? appointment.doctorId === parseInt(filterDoctor)
-      : true;
-
-    return matchesSearch && matchesDate && matchesDoctor;
-  });
-
+  if (isLoading && appointments.length === 0) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">ডেটা লোড হচ্ছে...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
@@ -349,7 +430,7 @@ const AppoientmentScheduling = () => {
                         className="text-xs border border-gray-300 rounded px-2 py-1"
                         value={appointment.status}
                         onChange={(e) =>
-                          handleStatusChange(appointment.id, e.target.value)
+                          handleStatusChange(appointment._id, e.target.value)
                         }
                       >
                         <option value="scheduled">শিডিউল্ড</option>
@@ -379,7 +460,7 @@ const AppoientmentScheduling = () => {
             </tbody>
           </table>
         </div>
-        {filteredAppointments.length === 0 && (
+        {appointments.length === 0 && (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center rounded-full bg-gray-100 p-4 mb-4">
               <FaCalendarAlt className="h-12 w-12 text-gray-400" />
@@ -453,7 +534,7 @@ const AppoientmentScheduling = () => {
                     >
                       <option value="">রোগী নির্বাচন করুন</option>
                       {patients.map((patient) => (
-                        <option key={patient.id} value={patient.id}>
+                        <option key={patient._id} value={patient._id}>
                           {patient.name} - {patient.phone}
                         </option>
                       ))}
@@ -472,7 +553,7 @@ const AppoientmentScheduling = () => {
                     >
                       <option value="">ডাক্তার নির্বাচন করুন</option>
                       {doctors.map((doctor) => (
-                        <option key={doctor.id} value={doctor.id}>
+                        <option key={doctor._id} value={doctor._id}>
                           {doctor.name} - {doctor.specialization}
                         </option>
                       ))}
