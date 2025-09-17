@@ -11,8 +11,14 @@ const {
   generateFinancialReport,
 } = require("../../middleware/reporting/financialReport");
 const {
+  generateInventoryReport,
+} = require("../../middleware/reporting/inventoryReport");
+const {
   generatePatientReport,
 } = require("../../middleware/reporting/patientReport");
+const {
+  generateServiceReport,
+} = require("../../middleware/reporting/serviceReport");
 const Appointment = require("../../models/appointment/appointment.model");
 const InventoryItem = require("../../models/inventory/inventory.model");
 const PaientsManagement = require("../../models/patient-management/patient_management.model");
