@@ -29,7 +29,7 @@ const getAllAppointment = async (req, res) => {
     }
 
     // doctors filter
-    if (doctor) {
+    if (doctor && doctor !== "all") {
       query.doctorId = doctor;
     }
 

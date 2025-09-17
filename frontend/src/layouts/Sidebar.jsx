@@ -11,6 +11,7 @@ import {
   FaHospitalSymbol,
   FaUserCog,
 } from "react-icons/fa";
+import { FaUserDoctor } from "react-icons/fa6";
 import Avater from "../assets/image/logo/avater.png";
 
 const Sidebar = ({ activePage, setActivePage }) => {
@@ -51,8 +52,8 @@ const Sidebar = ({ activePage, setActivePage }) => {
     {
       id: 6,
       name: "Docotrs",
-      icon: <FaChartBar className="text-xl" />,
-      color: "#3B0270",
+      icon: <FaUserDoctor className="text-xl" />,
+      color: "rgb(16, 185, 129)",
     },
   ];
 
