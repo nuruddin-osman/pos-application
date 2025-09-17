@@ -2,6 +2,7 @@ const Appointment = require("../../models/appointment/appointment.model");
 const Doctor = require("../../models/doctors/doctors.model");
 
 const PaientsManagement = require("../../models/patient-management/patient_management.model");
+const { v4: uuidv4 } = require("uuid");
 
 const getAllAppointment = async (req, res) => {
   try {
@@ -9,16 +10,22 @@ const getAllAppointment = async (req, res) => {
 
     let query = {};
 
-    // date filter
+    //  Date filter
     if (date) {
-      const startDate = new Date(date);
-      const endDate = new Date(date);
-      endDate.setDate(endDate.getDate() + 1);
+      const parsedDate = new Date(date);
 
-      query.date = {
-        $gte: startDate,
-        $lt: endDate,
-      };
+      if (!isNaN(parsedDate)) {
+        const startDate = new Date(parsedDate);
+        startDate.setHours(0, 0, 0, 0);
+
+        const endDate = new Date(parsedDate);
+        endDate.setHours(23, 59, 59, 999);
+
+        query.date = {
+          $gte: startDate,
+          $lte: endDate,
+        };
+      }
     }
 
     // doctors filter
@@ -82,25 +89,41 @@ const createAppointment = async (req, res) => {
     const { patientId, doctorId, date, time, duration, reason, status, notes } =
       req.body;
 
-    // DD-MM-YYYY কে Date Object-এ convert করুন
-    // const [day, month, year] = date.split("-");
-    const dateObject = new Date();
+    // frontend থেকে আসা তারিখ parse করা
+    // যদি mm/dd/yy আসে → mm/dd/yyyy এ convert করতে হবে
+    let dateObject;
 
-    // appointment ID generate
-    const appointmentCount = await Appointment.countDocuments();
-    const appointmentId = `APT-${new Date().getFullYear()}-${String(
-      appointmentCount + 1
-    ).padStart(4, "0")}`;
+    if (date.includes("/")) {
+      // ধরুন 09/16/25 → 2025 বানাতে হবে
+      const parts = date.split("/"); // [09, 16, 25]
+      let [month, day, year] = parts;
 
-    //date formated check
+      // year ছোট হলে 20 যোগ করা
+      if (year.length === 2) {
+        year = "20" + year;
+      }
+
+      dateObject = new Date(`${year}-${month}-${day}`); // yyyy-mm-dd
+    } else {
+      // fallback: সরাসরি new Date()
+      dateObject = new Date(date);
+    }
+
+    // date valid কিনা check
     if (isNaN(dateObject.getTime())) {
       return res.status(400).json({
         message:
-          "অবৈধ তারিখ ফরম্যাট। অনুগ্রহ করে DD-MM-YYYY ফরম্যাটে তারিখ প্রদান করুন",
+          "অবৈধ তারিখ ফরম্যাট। অনুগ্রহ করে mm/dd/yyyy ফরম্যাটে তারিখ প্রদান করুন",
       });
     }
 
-    // time slote avialable check
+    // appointment ID generate
+    const appointmentId = `APT-${new Date().getFullYear()}-${uuidv4().slice(
+      0,
+      8
+    )}`;
+
+    // time slot availability check
     const existingAppointment = await Appointment.findOne({
       doctorId,
       date: dateObject,
