@@ -50,6 +50,7 @@ const InventoryManagement = () => {
     description: "",
   });
   const { showAlert } = useAlert();
+  const BASE_URL = "https://pos-application-qj7p.onrender.com/api";
 
   // Category list
   const categories = [
@@ -74,7 +75,7 @@ const InventoryManagement = () => {
   }) => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:4000/api/inventory`, {
+      const response = await axios.get(`${BASE_URL}/inventory`, {
         params: {
           search: searchTerm,
           category: category,
@@ -130,7 +131,7 @@ const InventoryManagement = () => {
     try {
       if (editingItem) {
         const response = await axios.put(
-          `http://localhost:4000/api/inventory/${editingItem._id}`,
+          `${BASE_URL}/inventory/${editingItem._id}`,
           formData
         );
         if (response.data) {
@@ -139,10 +140,7 @@ const InventoryManagement = () => {
           showAlert("Error", "Something weint wrong", "error");
         }
       } else {
-        const response = await axios.post(
-          `http://localhost:4000/api/inventory`,
-          formData
-        );
+        const response = await axios.post(`${BASE_URL}/inventory`, formData);
         if (response.data) {
           showAlert("Success", "New inventory item created", "success");
         } else {
@@ -176,9 +174,7 @@ const InventoryManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:4000/api/inventory/${id}`
-      );
+      const response = await axios.delete(`${BASE_URL}/inventory/${id}`);
       if (response.data) {
         showAlert("Success", "This items is deleted", "success");
       } else {
@@ -194,9 +190,7 @@ const InventoryManagement = () => {
 
   const inventorySummary = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:4000/api/inventory/dashboard/stats`
-      );
+      const response = await axios.get(`${BASE_URL}/inventory/dashboard/stats`);
 
       if (response.data) {
         setStockItems(response.data);
@@ -209,9 +203,7 @@ const InventoryManagement = () => {
   //Expire date setup
   const fetchExpiryAlerts = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:4000/api/inventory/alerts/expiry`
-      );
+      const res = await axios.get(`${BASE_URL}/inventory/alerts/expiry`);
       setExpireItems(res.data.expiringSoonItems);
     } catch (err) {
       console.error("Error fetching expiry alerts:", err);

@@ -50,6 +50,7 @@ const BillingAndInvoicing = () => {
   });
 
   const { showAlert } = useAlert();
+  const BASE_URL = "https://pos-application-qj7p.onrender.com/api";
 
   const addService = () => {
     if (!serviceForm.name || !serviceForm.price) {
@@ -77,14 +78,11 @@ const BillingAndInvoicing = () => {
   const fetchInvoice = async (searchTerm = "") => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:4000/api/billing-invoice/`,
-        {
-          params: {
-            search: searchTerm,
-          },
-        }
-      );
+      const response = await axios.get(`${BASE_URL}/billing-invoice/`, {
+        params: {
+          search: searchTerm,
+        },
+      });
       if (response.data) {
         setInvoices(response.data.invoices);
       } else {
@@ -116,7 +114,7 @@ const BillingAndInvoicing = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:4000/api/billing-invoice`,
+        `${BASE_URL}/billing-invoice`,
         formData
       );
 
@@ -157,7 +155,7 @@ const BillingAndInvoicing = () => {
 
     try {
       const response = await axios.patch(
-        `http://localhost:4000/api/billing-invoice/${selectedInvoice.invoiceId}/payment`,
+        `${BASE_URL}/billing-invoice/${selectedInvoice.invoiceId}/payment`,
         {
           paidAmount: formData.paidAmount,
           paymentMethod: formData.paymentMethod,
@@ -187,7 +185,7 @@ const BillingAndInvoicing = () => {
   //Dashoard stats calculation
   const earningAmounts = async () => {
     const response = await axios.get(
-      `http://localhost:4000/api/billing-invoice/dashboard/stats`
+      `${BASE_URL}/billing-invoice/dashboard/stats`
     );
     if (response.data) {
       setEarningAmount(response.data);

@@ -47,6 +47,7 @@ const AppoientmentScheduling = () => {
   });
 
   const { showAlert } = useAlert();
+  const BASE_URL = "https://pos-application-qj7p.onrender.com/api";
 
   const fetchAppointments = async ({
     searchTerm = "",
@@ -54,16 +55,13 @@ const AppoientmentScheduling = () => {
     filterDate,
   }) => {
     try {
-      const response = await axios.get(
-        `http://localhost:4000/api/appointments`,
-        {
-          params: {
-            search: searchTerm,
-            doctor: filterDoctor,
-            date: filterDate,
-          },
-        }
-      );
+      const response = await axios.get(`${BASE_URL}/appointments`, {
+        params: {
+          search: searchTerm,
+          doctor: filterDoctor,
+          date: filterDate,
+        },
+      });
       if (response.data) {
         setAppointments(response.data.appointments);
       } else {
@@ -78,7 +76,7 @@ const AppoientmentScheduling = () => {
   // রোগী ফেচ করা
   const fetchPatients = async () => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/patients`);
+      const response = await axios.get(`${BASE_URL}/patients`);
       setPatients(response.data.patients);
     } catch (error) {
       console.error("রোগী ফেচ করতে সমস্যা:", error);
@@ -89,7 +87,7 @@ const AppoientmentScheduling = () => {
   // ডাক্তার ফেচ করা
   const fetchDoctors = async () => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/doctors`);
+      const response = await axios.get(`${BASE_URL}/doctors`);
       setDoctors(response.data.doctors);
     } catch (error) {
       console.error("ডাক্তার ফেচ করতে সমস্যা:", error);
@@ -129,7 +127,7 @@ const AppoientmentScheduling = () => {
     try {
       if (editingAppointment) {
         const response = await axios.put(
-          `http://localhost:4000/api/appointments/${editingAppointment._id}`,
+          `${BASE_URL}/appointments/${editingAppointment._id}`,
           formData
         );
         if (response.data) {
@@ -142,10 +140,7 @@ const AppoientmentScheduling = () => {
           showAlert("Error", "Data is not updated", "error");
         }
       } else {
-        const response = await axios.post(
-          `http://localhost:4000/api/appointments`,
-          formData
-        );
+        const response = await axios.post(`${BASE_URL}/appointments`, formData);
         if (response.data) {
           showAlert("Success", "New Appointment is created", "success");
         } else {
@@ -192,9 +187,7 @@ const AppoientmentScheduling = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:4000/api/appointments/${id}`
-      );
+      const response = await axios.delete(`${BASE_URL}/appointments/${id}`);
       if (response.data) {
         showAlert(
           "Success",
@@ -213,7 +206,7 @@ const AppoientmentScheduling = () => {
   const handleStatusChange = async (id, status) => {
     try {
       const response = await axios.patch(
-        `http://localhost:4000/api/appointments/${id}/status`,
+        `${BASE_URL}/appointments/${id}/status`,
         { status }
       );
       if (response.data) {

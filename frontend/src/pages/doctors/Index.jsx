@@ -48,6 +48,7 @@ const DoctorsManagement = () => {
   });
 
   const { showAlert } = useAlert();
+  const BASE_URL = "https://pos-application-qj7p.onrender.com/api";
 
   // বিশেষত্বের লিস্ট
   const specializations = [
@@ -69,7 +70,7 @@ const DoctorsManagement = () => {
     filterSpecialization = "all",
   }) => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/doctors`, {
+      const response = await axios.get(`${BASE_URL}/doctors`, {
         params: {
           search: searchTerm,
           specialization: filterSpecialization,
@@ -110,7 +111,7 @@ const DoctorsManagement = () => {
     try {
       if (editingDoctor) {
         const response = await axios.put(
-          `http://localhost:4000/api/doctors/${editingDoctor._id}`,
+          `${BASE_URL}/doctors/${editingDoctor._id}`,
           formData
         );
         if (response.data) {
@@ -119,10 +120,7 @@ const DoctorsManagement = () => {
           showAlert("Error", "Doctors is not updated", "error");
         }
       } else {
-        const response = await axios.post(
-          `http://localhost:4000/api/doctors`,
-          formData
-        );
+        const response = await axios.post(`${BASE_URL}/doctors`, formData);
         if (response.data) {
           showAlert("Success", "New doctors is created", "success");
         } else {
@@ -158,9 +156,7 @@ const DoctorsManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:4000/api/doctors/${id}`
-      );
+      const response = await axios.delete(`${BASE_URL}/doctors/${id}`);
       if (response.data) {
         showAlert("Success", "this doctors is deleted", "success");
         fetchDoctors("");

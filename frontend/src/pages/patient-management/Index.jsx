@@ -45,12 +45,13 @@ const PatientManagement = () => {
     medicalHistory: "",
   });
   const { showAlert } = useAlert();
+  const BASE_URL = "https://pos-application-qj7p.onrender.com/api";
 
   // Get patients and serach patients
   const fetchPatients = async (searchTerm) => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:4000/api/patients`, {
+      const response = await axios.get(`${BASE_URL}/patients`, {
         params: {
           search: searchTerm,
         },
@@ -90,7 +91,7 @@ const PatientManagement = () => {
     if (editingPatient) {
       // Update patients. PUT request
       const response = await axios.put(
-        `http://localhost:4000/api/patients/${editingPatient._id}`,
+        `${BASE_URL}/patients/${editingPatient._id}`,
         formData
       );
 
@@ -105,10 +106,7 @@ const PatientManagement = () => {
       }
     } else {
       // New patients add. POST request
-      const response = await axios.post(
-        "http://localhost:4000/api/patients",
-        formData
-      );
+      const response = await axios.post(`${BASE_URL}/patients`, formData);
 
       if (response.data) {
         showAlert("সফল", "নতুন রোগী সফলভাবে যোগ করা হয়েছে", "success");
@@ -133,9 +131,7 @@ const PatientManagement = () => {
   };
 
   const handleDelete = async (id) => {
-    const response = await axios.delete(
-      `http://localhost:4000/api/patients/${id}`
-    );
+    const response = await axios.delete(`${BASE_URL}/patients/${id}`);
     if (response.data) {
       showAlert("সফল", response.data.message, "success");
     } else {
