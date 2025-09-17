@@ -13,6 +13,9 @@ import {
 } from "react-icons/fa";
 import { useAlert } from "../../components/AlertMessage";
 import axios from "axios";
+import ItemsPerPageSelector from "../../components/ItemsPerPageSelector";
+import PaginationControls from "../../components/PaginationControls";
+import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
 
 const AppoientmentScheduling = () => {
   const [appointments, setAppointments] = useState([]);
@@ -25,7 +28,12 @@ const AppoientmentScheduling = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { showAlert } = useAlert();
+
+  //pagination perpose
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [showItemsPerPageDropdown, setShowItemsPerPageDropdown] =
+    useState(false);
 
   const [formData, setFormData] = useState({
     patientId: "",
@@ -37,6 +45,8 @@ const AppoientmentScheduling = () => {
     status: "scheduled",
     notes: "",
   });
+
+  const { showAlert } = useAlert();
 
   const fetchAppointments = async ({
     searchTerm = "",
@@ -98,6 +108,7 @@ const AppoientmentScheduling = () => {
     const delayDebounceFn = setTimeout(() => {
       // handleSearch();
       fetchAppointments({ searchTerm, filterDoctor, filterDate });
+      setCurrentPage(0);
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
@@ -206,7 +217,6 @@ const AppoientmentScheduling = () => {
         { status }
       );
       if (response.data) {
-        showAlert("Success", "status", "success");
         setAppointments((prev) =>
           prev.map((appt) => (appt._id === id ? { ...appt, status } : appt))
         );
@@ -216,6 +226,25 @@ const AppoientmentScheduling = () => {
     } catch (error) {
       console.error("স্ট্যাটাস আপডেট করতে সমস্যা:", error);
     }
+  };
+
+  // Pagination calculation
+  const startOffset = currentPage * itemsPerPage;
+  const endOffset = startOffset + itemsPerPage;
+  const pageCount = Math.ceil(appointments.length / itemsPerPage);
+  const currentDoctors = appointments.slice(startOffset, endOffset);
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  // Items per page options
+  const itemsPerPageOptions = getItemsPerPageOptions();
+
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(value);
+    setCurrentPage(0); // Reset to first page when changing items per page
+    setShowItemsPerPageDropdown(false);
   };
 
   return (
@@ -285,6 +314,17 @@ const AppoientmentScheduling = () => {
         </div>
       </div>
 
+      {/* Items per page selector */}
+      <ItemsPerPageSelector
+        totalItems={doctors.length}
+        itemsPerPage={itemsPerPage}
+        itemsPerPageOptions={itemsPerPageOptions}
+        showDropdown={showItemsPerPageDropdown}
+        setShowDropdown={setShowItemsPerPageDropdown}
+        handleItemsPerPageChange={handleItemsPerPageChange}
+        label="মোট আইটেম"
+      />
+
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -329,7 +369,7 @@ const AppoientmentScheduling = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {appointments.map((appointment) => (
+              {currentDoctors.map((appointment) => (
                 <tr
                   key={appointment._id}
                   className="hover:bg-gray-50 transition-colors"
@@ -429,6 +469,17 @@ const AppoientmentScheduling = () => {
           </div>
         )}
       </div>
+
+      {/* pagination controlls */}
+      <PaginationControls
+        currentPage={currentPage}
+        startOffset={startOffset}
+        endOffset={endOffset}
+        totalItems={appointments.length}
+        pageCount={pageCount}
+        handlePageClick={handlePageClick}
+        label="Item"
+      />
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
