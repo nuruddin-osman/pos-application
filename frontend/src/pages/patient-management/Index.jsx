@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
 import { useAlert } from "../../components/AlertMessage";
+import PaginationControls from "../../components/PaginationControls";
 
 const PatientManagement = () => {
   const [patients, setPatients] = useState([]);
@@ -24,16 +25,10 @@ const PatientManagement = () => {
   const [editingPatient, setEditingPatient] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(2);
   const [showItemsPerPageDropdown, setShowItemsPerPageDropdown] =
     useState(false);
 
-  const [alertModal, setAlertModal] = useState({
-    isOpen: false,
-    title: "",
-    message: "",
-    type: "success",
-  });
   const [formData, setFormData] = useState({
     name: "",
     age: "",
@@ -191,8 +186,8 @@ const PatientManagement = () => {
         </div>
       </div>
 
-      <div className="w-full flex justify-between items-center p-4 border-b border-gray-200">
-        <div className="xl:w-[16%] text-base text-gray-600">
+      <div className="w-full flex justify-between items-center py-4 md:p-4 border-b border-gray-200">
+        <div className="xl:w-[16%] text-sm text-gray-600">
           মোট রোগী: {patients.length} জন
         </div>
         <div className="w-[68%] hidden xl:block bg-white p-4 rounded-xl shadow-sm">
@@ -212,7 +207,7 @@ const PatientManagement = () => {
         <div className="xl:w-[16%] flex justify-end">
           <div className=" relative">
             <button
-              className="flex items-center px-5 py-3 border border-gray-300 rounded-md bg-white text-base font-medium text-gray-700 hover:bg-gray-50"
+              className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
               onClick={() =>
                 setShowItemsPerPageDropdown(!showItemsPerPageDropdown)
               }
@@ -385,45 +380,17 @@ const PatientManagement = () => {
         )}
       </div>
 
-      {/* Pagination Controls */}
-      <div className="xl:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-end xl:justify-between">
-        <div className="hidden xl:block text-sm text-gray-700 mb-4 sm:mb-0">
-          দেখানো হচ্ছে <span className="font-medium">{startOffset + 1}</span>{" "}
-          থেকে{" "}
-          <span className="font-medium">
-            {Math.min(endOffset, patients.length)}
-          </span>{" "}
-          এর মধ্যে, মোট <span className="font-medium">{patients.length}</span>{" "}
-          রোগী
-        </div>
+      {/* pagination controlls */}
+      <PaginationControls
+        currentPage={currentPage}
+        startOffset={startOffset}
+        endOffset={endOffset}
+        totalItems={patients.length}
+        pageCount={pageCount}
+        handlePageClick={handlePageClick}
+        label="Item"
+      />
 
-        <ReactPaginate
-          previousLabel={"পূর্বের"}
-          nextLabel={"পরের"}
-          breakLabel={"..."}
-          pageCount={pageCount}
-          marginPagesDisplayed={2}
-          pageRangeDisplayed={5}
-          onPageChange={handlePageClick}
-          containerClassName={"flex items-center space-x-2"}
-          pageClassName={
-            "py-2 rounded border border-gray-300 hover:bg-gray-50 cursor-pointer"
-          }
-          pageLinkClassName={"text-gray-700 px-5 py-3"}
-          previousClassName={
-            "py-2 rounded border border-gray-300 hover:bg-gray-50  cursor-pointer"
-          }
-          previousLinkClassName={"text-gray-700 px-5 py-3"}
-          nextClassName={
-            "py-2 rounded border border-gray-300 hover:bg-gray-50  cursor-pointer"
-          }
-          nextLinkClassName={"text-gray-700 px-5 py-3"}
-          breakClassName={"px-3 py-2"}
-          activeClassName={"bg-blue-500 text-white border-blue-500"}
-          disabledClassName={"opacity-50 cursor-not-allowed"}
-          forcePage={currentPage}
-        />
-      </div>
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-10 mx-auto p-4 border w-full max-w-2xl shadow-lg rounded-md bg-white">

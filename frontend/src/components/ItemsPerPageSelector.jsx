@@ -10,7 +10,7 @@ const ItemsPerPageSelector = ({
   label,
 }) => {
   return (
-    <div className="flex justify-between items-center p-4 border-b border-gray-200">
+    <div className="flex justify-between items-center py-4 md:p-4 border-b border-gray-200">
       <div className="text-sm text-gray-600">
         {label}: {totalItems}
       </div>

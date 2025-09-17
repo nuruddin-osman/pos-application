@@ -26,19 +26,14 @@ const PaginationControls = ({
         pageRangeDisplayed={5}
         onPageChange={handlePageClick}
         containerClassName={"flex items-center space-x-2"}
-        pageClassName={
-          "py-2 rounded border border-gray-300 hover:bg-[#37353E] cursor-pointer"
-        }
-        pageLinkClassName={"text-gray-700 hover:text-[#E9E294] px-5 py-3"}
-        previousClassName={
-          "py-2 rounded border border-gray-300  hover:bg-[#5D688A] cursor-pointer"
-        }
-        previousLinkClassName={"text-gray-700 hover:text-[#E9E294] px-5 py-3"}
-        nextClassName={
-          "py-2 rounded border border-gray-300 hover:bg-[#5D688A] cursor-pointer"
-        }
-        nextLinkClassName={"text-gray-700 hover:text-[#E9E294] px-5 py-3"}
-        breakClassName={"px-3 py-2"}
+        // Page numbers
+        pageClassName="hidden md:block rounded border border-gray-300 hover:bg-[#37353E] cursor-pointer"
+        pageLinkClassName="hidden md:block text-gray-700 hover:text-[#E9E294] px-5 py-3"
+        previousClassName="py-3 rounded border border-gray-300 hover:bg-[#5D688A] cursor-pointer"
+        previousLinkClassName="text-gray-700 hover:text-[#E9E294] px-5 py-3"
+        nextClassName="py-3 rounded border border-gray-300 hover:bg-[#5D688A] cursor-pointer"
+        nextLinkClassName="text-gray-700 hover:text-[#E9E294] px-5 py-3"
+        breakClassName="px-3 py-2 hidden sm:block"
         activeClassName={"bg-[#FF9A00] text-white border-blue-500"}
         disabledClassName={"opacity-50 cursor-not-allowed"}
         forcePage={currentPage}
