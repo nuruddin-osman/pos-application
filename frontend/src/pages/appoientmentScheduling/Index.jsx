@@ -12,13 +12,6 @@ import {
   FaNotesMedical,
 } from "react-icons/fa";
 import { useAlert } from "../../components/AlertMessage";
-import {
-  fetchPatients,
-  fetchDoctors,
-  updateAppointment,
-  deleteAppointment,
-  updateAppointmentStatus,
-} from "../../components/AppointmentApiFetch";
 import axios from "axios";
 
 const AppoientmentScheduling = () => {
@@ -45,20 +38,19 @@ const AppoientmentScheduling = () => {
     notes: "",
   });
 
-  // সমস্ত ডেটা লোড করা
-  useEffect(() => {
-    loadAllData();
-    fetchAppointments("");
-  }, []);
-  console.log(appointments);
-
-  const fetchAppointments = async (searchTerm = "") => {
+  const fetchAppointments = async ({
+    searchTerm = "",
+    filterDoctor = "all",
+    filterDate,
+  }) => {
     try {
       const response = await axios.get(
         `http://localhost:4000/api/appointments`,
         {
           params: {
             search: searchTerm,
+            doctor: filterDoctor,
+            date: filterDate,
           },
         }
       );
@@ -73,51 +65,43 @@ const AppoientmentScheduling = () => {
     }
   };
 
-  const loadAllData = async () => {
-    setIsLoading(true);
+  // রোগী ফেচ করা
+  const fetchPatients = async () => {
     try {
-      const [appointmentsData, patientsData, doctorsData] = await Promise.all([
-        fetchAppointments(),
-        fetchPatients(),
-        fetchDoctors(),
-      ]);
-
-      setAppointments(appointmentsData.appointments || []);
-      setPatients(patientsData.patients || []);
-      setDoctors(doctorsData.doctors || []);
+      const response = await axios.get(`http://localhost:4000/api/patients`);
+      setPatients(response.data.patients);
     } catch (error) {
-      showAlert("ডেটা লোড করতে সমস্যা হয়েছে", "error");
-      console.error("ডেটা লোড error:", error);
-    } finally {
-      setIsLoading(false);
+      console.error("রোগী ফেচ করতে সমস্যা:", error);
+      throw error;
     }
   };
 
+  // ডাক্তার ফেচ করা
+  const fetchDoctors = async () => {
+    try {
+      const response = await axios.get(`http://localhost:4000/api/doctors`);
+      setDoctors(response.data.doctors);
+    } catch (error) {
+      console.error("ডাক্তার ফেচ করতে সমস্যা:", error);
+      throw error;
+    }
+  };
+
+  // First time load
+  useEffect(() => {
+    fetchAppointments({ searchTerm: "", filterDoctor, filterDate });
+    fetchDoctors();
+    fetchPatients();
+  }, []);
   // সার্চ টার্ম পরিবর্তন হলে
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       // handleSearch();
-      fetchAppointments(searchTerm);
+      fetchAppointments({ searchTerm, filterDoctor, filterDate });
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, filterDate, filterDoctor, filterStatus]);
-
-  const handleSearch = async () => {
-    try {
-      const params = {};
-
-      if (searchTerm) params.search = searchTerm;
-      if (filterDate) params.date = filterDate;
-      if (filterDoctor) params.doctor = filterDoctor;
-      if (filterStatus) params.status = filterStatus;
-
-      const data = await fetchAppointments(params);
-      setAppointments(data.appointments || []);
-    } catch (error) {
-      console.error("সার্চ করতে সমস্যা:", error);
-    }
-  };
+  }, [searchTerm, filterDate, filterDoctor]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -133,33 +117,31 @@ const AppoientmentScheduling = () => {
 
     try {
       if (editingAppointment) {
-        // এডিট মোড
-        const updatedAppointment = await updateAppointment(
-          editingAppointment._id,
+        const response = await axios.put(
+          `http://localhost:4000/api/appointments/${editingAppointment._id}`,
           formData
         );
-        setAppointments(
-          appointments.map((apt) =>
-            apt._id === editingAppointment._id ? updatedAppointment : apt
-          )
-        );
-        showAlert("অ্যাপয়েন্টমেন্ট সফলভাবে আপডেট হয়েছে", "success");
-      } else {
-        // নতুন অ্যাপয়েন্টমেন্ট তৈরি করা
-
-        try {
-          const response = await axios.post(
-            `http://localhost:4000/api/appointments`,
-            formData
+        if (response.data) {
+          showAlert(
+            "Success",
+            "অ্যাপয়েন্টমেন্ট সফলভাবে আপডেট হয়েছে",
+            "success"
           );
-          console.log(response.data);
-        } catch (error) {
-          console.error("অ্যাপয়েন্টমেন্ট তৈরি করতে সমস্যা:", error);
-          throw error;
+        } else {
+          showAlert("Error", "Data is not updated", "error");
+        }
+      } else {
+        const response = await axios.post(
+          `http://localhost:4000/api/appointments`,
+          formData
+        );
+        if (response.data) {
+          showAlert("Success", "New Appointment is created", "success");
+        } else {
+          showAlert("Error", "Appointment is not created", "error");
         }
       }
 
-      setIsModalOpen(false);
       setFormData({
         patientId: "",
         doctorId: "",
@@ -170,24 +152,27 @@ const AppoientmentScheduling = () => {
         status: "scheduled",
         notes: "",
       });
+      setIsModalOpen(false);
       setEditingAppointment(null);
     } catch (error) {
       showAlert("অ্যাপয়েন্টমেন্ট সেভ করতে সমস্যা হয়েছে", "error");
-      console.error("সাবমিট error:", error);
     } finally {
       setIsLoading(false);
+      fetchAppointments("");
     }
   };
 
   const handleEdit = (appointment) => {
     setFormData({
-      patientId: appointment.patientId._id || appointment.patientId,
-      doctorId: appointment.doctorId._id || appointment.doctorId,
-      date: appointment.date.split("T")[0], // ISO format থেকে date format
-      time: appointment.time,
-      duration: appointment.duration.toString(),
-      reason: appointment.reason,
-      status: appointment.status,
+      patientId: appointment.patientId?._id || appointment.patientId,
+      doctorId: appointment.doctorId?._id || appointment.doctorId,
+      date: appointment.date
+        ? new Date(appointment.date).toISOString().split("T")[0]
+        : "",
+      time: appointment.time || "",
+      duration: appointment.duration || "30",
+      reason: appointment.reason || "",
+      status: appointment.status || "scheduled",
       notes: appointment.notes || "",
     });
     setEditingAppointment(appointment);
@@ -195,72 +180,44 @@ const AppoientmentScheduling = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("আপনি কি এই অ্যাপয়েন্টমেন্টটি ডিলিট করতে চান?")) {
-      try {
-        await deleteAppointment(id);
-        setAppointments(
-          appointments.filter((appointment) => appointment._id !== id)
-        );
-        showAlert("অ্যাপয়েন্টমেন্ট সফলভাবে ডিলিট হয়েছে", "success");
-      } catch (error) {
-        showAlert("অ্যাপয়েন্টমেন্ট ডিলিট করতে সমস্যা হয়েছে", "error");
-        console.error("ডিলিট error:", error);
-      }
-    }
-  };
-
-  const handleStatusChange = async (id, newStatus) => {
     try {
-      const updatedAppointment = await updateAppointmentStatus(id, newStatus);
-      setAppointments(
-        appointments.map((apt) => (apt._id === id ? updatedAppointment : apt))
+      const response = await axios.delete(
+        `http://localhost:4000/api/appointments/${id}`
       );
-      showAlert("স্ট্যাটাস সফলভাবে আপডেট হয়েছে", "success");
+      if (response.data) {
+        showAlert(
+          "Success",
+          "অ্যাপয়েন্টমেন্ট সফলভাবে ডিলিট হয়েছে",
+          "success"
+        );
+        setAppointments((prev) => prev.filter((item) => item._id !== id));
+      } else {
+        showAlert("Error", "Something is wrong", "error");
+      }
     } catch (error) {
-      showAlert("স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে", "error");
-      console.error("স্ট্যাটাস change error:", error);
+      console.log(error);
     }
   };
 
-  const getPatientName = (patient) => {
-    if (!patient) return "অজানা রোগী";
-    return typeof patient === "object" ? patient.name : "অজানা রোগী";
+  const handleStatusChange = async (id, status) => {
+    try {
+      const response = await axios.patch(
+        `http://localhost:4000/api/appointments/${id}/status`,
+        { status }
+      );
+      if (response.data) {
+        showAlert("Success", "status", "success");
+        setAppointments((prev) =>
+          prev.map((appt) => (appt._id === id ? { ...appt, status } : appt))
+        );
+      } else {
+        showAlert("Error", "Something is wrong", "error");
+      }
+    } catch (error) {
+      console.error("স্ট্যাটাস আপডেট করতে সমস্যা:", error);
+    }
   };
 
-  const getDoctorName = (doctor) => {
-    if (!doctor) return "অজানা ডাক্তার";
-    return typeof doctor === "object" ? doctor.name : "অজানা ডাক্তার";
-  };
-
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      scheduled: { color: "bg-blue-100 text-blue-800", text: "শিডিউল্ড" },
-      confirmed: { color: "bg-green-100 text-green-800", text: "কনফার্মড" },
-      completed: { color: "bg-purple-100 text-purple-800", text: "সম্পন্ন" },
-      cancelled: { color: "bg-red-100 text-red-800", text: "বাতিল" },
-      noshow: { color: "bg-yellow-100 text-yellow-800", text: "অনুপস্থিত" },
-    };
-
-    const config = statusConfig[status] || statusConfig.scheduled;
-    return (
-      <span
-        className={`px-2 py-1 text-xs font-medium rounded-full ${config.color}`}
-      >
-        {config.text}
-      </span>
-    );
-  };
-
-  if (isLoading && appointments.length === 0) {
-    return (
-      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">ডেটা লোড হচ্ছে...</p>
-        </div>
-      </div>
-    );
-  }
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
@@ -320,7 +277,7 @@ const AppoientmentScheduling = () => {
           >
             <option value="">সব ডাক্তার</option>
             {doctors.map((doctor) => (
-              <option key={doctor.id} value={doctor.id}>
+              <option key={doctor._id} value={doctor._id}>
                 {doctor.name}
               </option>
             ))}
@@ -393,7 +350,7 @@ const AppoientmentScheduling = () => {
                       </div>
                       <div className="ml-4">
                         <div className="font-medium text-gray-900">
-                          {getPatientName(appointment.patientId)}
+                          {appointment.patientId.name}
                         </div>
                       </div>
                     </div>
@@ -405,7 +362,7 @@ const AppoientmentScheduling = () => {
                       </div>
                       <div className="ml-4">
                         <div className="font-medium text-gray-900">
-                          {getDoctorName(appointment.doctorId)}
+                          {appointment.doctorId.name}
                         </div>
                       </div>
                     </div>
@@ -422,9 +379,7 @@ const AppoientmentScheduling = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm">
-                      {getStatusBadge(appointment.status)}
-                    </div>
+                    <div className="text-sm">{appointment.status}</div>
                     <div className="mt-2">
                       <select
                         className="text-xs border border-gray-300 rounded px-2 py-1"
@@ -450,7 +405,7 @@ const AppoientmentScheduling = () => {
                     </button>
                     <button
                       className="text-red-600 hover:text-red-900"
-                      onClick={() => handleDelete(appointment.id)}
+                      onClick={() => handleDelete(appointment._id)}
                     >
                       <FaTrash className="inline mr-1" /> ডিলিট
                     </button>
