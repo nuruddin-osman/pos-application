@@ -50,7 +50,7 @@ const BillingAndInvoicing = () => {
   });
 
   const { showAlert } = useAlert();
-  const BASE_URL = "https://pos-application-qj7p.onrender.com/api";
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
   const addService = () => {
     if (!serviceForm.name || !serviceForm.price) {
