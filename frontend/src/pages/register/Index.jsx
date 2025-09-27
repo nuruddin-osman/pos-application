@@ -1,7 +1,6 @@
 import React, { useState, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
 import {
   FaUser,
   FaPhone,
@@ -10,7 +9,6 @@ import {
   FaLock,
   FaEye,
   FaEyeSlash,
-  FaHospitalSymbol,
 } from "react-icons/fa";
 
 const Register = ({ placeholder }) => {
@@ -54,7 +52,7 @@ const Register = ({ placeholder }) => {
             <div className="flex flex-col md:flex-row gap-5">
               <div className="space-y-2 w-full md:w-1/2">
                 <label
-                  htmlFor="fullname"
+                  htmlFor="fullName"
                   className="block text-sm font-medium text-gray-700 font-open-sans"
                 >
                   পুরো নাম *
@@ -64,23 +62,23 @@ const Register = ({ placeholder }) => {
                     <FaUser className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    {...register("fullname", {
-                      required: "please fullname must fillup",
+                    {...register("fullName", {
+                      required: "please fullName must fillup",
                     })}
                     type="text"
-                    id="fullname"
-                    name="fullname"
+                    id="fullName"
+                    name="fullName"
                     className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors form-control ${
-                      errors.fullname
+                      errors.fullName
                         ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                         : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                     }`}
                     placeholder="আপনার পুরো নাম লিখুন"
                   />
                 </div>
-                {errors.fullname && (
+                {errors.fullName && (
                   <p className="text-red-600 text-sm font-roboto">
-                    {errors.fullname.message}
+                    {errors.fullName.message}
                   </p>
                 )}
               </div>
@@ -250,7 +248,7 @@ const Register = ({ placeholder }) => {
                   <option value="">নির্বাচন করুন</option>
                   <option value="male">পুরুষ</option>
                   <option value="female">মহিলা</option>
-                  <option value="other">অন্যান্য</option>
+                  <option value="others">অন্যান্য</option>
                 </select>
               </div>
             </div>
