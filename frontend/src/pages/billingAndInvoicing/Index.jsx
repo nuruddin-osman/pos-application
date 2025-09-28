@@ -17,6 +17,7 @@ import ReactPaginate from "react-paginate";
 import { useAlert } from "../../components/AlertMessage";
 import ItemsPerPageSelector from "../../components/ItemsPerPageSelector";
 import PaginationControls from "../../components/PaginationControls";
+import { useNavigate } from "react-router-dom";
 
 const BillingAndInvoicing = () => {
   const [invoices, setInvoices] = useState([]);
@@ -51,6 +52,7 @@ const BillingAndInvoicing = () => {
 
   const { showAlert } = useAlert();
   const BASE_URL = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
 
   const addService = () => {
     if (!serviceForm.name || !serviceForm.price) {
@@ -214,6 +216,30 @@ const BillingAndInvoicing = () => {
     setShowItemsPerPageDropdown(false);
   };
 
+  const handleAddInvoice = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsInvoiceModalOpen(true);
+    } else {
+      navigate("/login");
+    }
+  };
+
+  const handlEdit = (invoice) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setSelectedInvoice(invoice);
+      setIsPaymentModalOpen(true);
+      setFormData({
+        ...formData,
+        paidAmount: invoice.paidAmount,
+        paymentMethod: invoice.paymentMethod,
+      });
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
@@ -221,10 +247,7 @@ const BillingAndInvoicing = () => {
           বিলিং ও ইনভয়েসিং
         </h2>
         <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            className="flex items-center btn"
-            onClick={() => setIsInvoiceModalOpen(true)}
-          >
+          <button className="flex items-center btn" onClick={handleAddInvoice}>
             <FaFileInvoice className="mr-2" />
             নতুন বিল তৈরি
           </button>
@@ -430,13 +453,7 @@ const BillingAndInvoicing = () => {
                     <button
                       className="text-indigo-600 hover:text-indigo-900 mr-3"
                       onClick={() => {
-                        setSelectedInvoice(invoice);
-                        setIsPaymentModalOpen(true);
-                        setFormData({
-                          ...formData,
-                          paidAmount: invoice.paidAmount,
-                          paymentMethod: invoice.paymentMethod,
-                        });
+                        handlEdit(invoice);
                       }}
                     >
                       <FaMoneyBillWave className="inline mr-1" /> পেমেন্ট

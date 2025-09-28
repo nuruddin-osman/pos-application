@@ -68,10 +68,13 @@ const Login = ({ placeholder }) => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 font-inter">
         <div className="max-w-xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#FAB12F] to-[#8C1007] p-6 text-center">
-            <h2 className="text-xl font-semibold text-white font-open-sans">
+          <div className="bg-gradient-to-r from-[#FAB12F] to-[#8C1007] p-6 flex justify-between items-center">
+            <h2 className="text-base md:text-xl font-semibold text-white font-open-sans">
               Login your account
             </h2>
+            <Link to="/" className="btnSm">
+              Home
+            </Link>
           </div>
 
           {/* Registration Form */}
@@ -161,7 +164,7 @@ const Login = ({ placeholder }) => {
                 type="submit"
                 className="w-fit cursor-pointer bg-gradient-to-r from-[#FAB12F] to-[#8C1007] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#FAB12F]/70 hover:to-[#8C1007]/70 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
               >
-                রেজিস্ট্রেশন সম্পন্ন করুন
+                Login
               </button>
             </div>
 

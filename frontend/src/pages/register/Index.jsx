@@ -52,10 +52,13 @@ const Register = ({ placeholder }) => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 font-inter">
         <div className="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#FAB12F] to-[#8C1007] p-6 text-center">
-            <h2 className="text-xl font-semibold text-white font-open-sans">
-              নতুন অ্যাকাউন্ট তৈরি করুন
+          <div className="bg-gradient-to-r from-[#FAB12F] to-[#8C1007] p-6  flex justify-between items-center">
+            <h2 className="text-base md:text-xl font-semibold text-white font-open-sans">
+              New Account Create
             </h2>
+            <Link to="/" className="btnSm">
+              Home
+            </Link>
           </div>
 
           {/* Registration Form */}

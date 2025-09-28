@@ -19,6 +19,7 @@ import { useAlert } from "../../components/AlertMessage";
 import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
 import ItemsPerPageSelector from "../../components/ItemsPerPageSelector";
 import PaginationControls from "../../components/PaginationControls";
+import { useNavigate } from "react-router-dom";
 
 const DoctorsManagement = () => {
   const [doctors, setDoctors] = useState([]);
@@ -49,6 +50,7 @@ const DoctorsManagement = () => {
 
   const { showAlert } = useAlert();
   const BASE_URL = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
 
   // বিশেষত্বের লিস্ট
   const specializations = [
@@ -149,22 +151,32 @@ const DoctorsManagement = () => {
   };
 
   const handleEdit = (doctor) => {
-    setFormData(doctor);
-    setEditingDoctor(doctor);
-    setIsModalOpen(true);
+    const token = localStorage.getItem("token");
+    if (token) {
+      setFormData(doctor);
+      setEditingDoctor(doctor);
+      setIsModalOpen(true);
+    } else {
+      navigate("/login");
+    }
   };
 
   const handleDelete = async (id) => {
-    try {
-      const response = await axios.delete(`${BASE_URL}/doctors/${id}`);
-      if (response.data) {
-        showAlert("Success", "this doctors is deleted", "success");
-        fetchDoctors("");
-      } else {
-        showAlert("Error", "Doctors is not delete", "error");
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const response = await axios.delete(`${BASE_URL}/doctors/${id}`);
+        if (response.data) {
+          showAlert("Success", "this doctors is deleted", "success");
+          fetchDoctors("");
+        } else {
+          showAlert("Error", "Doctors is not delete", "error");
+        }
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
+    } else {
+      navigate("/login");
     }
   };
 
@@ -178,6 +190,15 @@ const DoctorsManagement = () => {
         return { text: "ছুটিতে", class: "bg-red-100 text-red-800" };
       default:
         return { text: "অজানা", class: "bg-gray-100 text-gray-800" };
+    }
+  };
+
+  const handleAddDoctors = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsModalOpen(true);
+    } else {
+      navigate("/login");
     }
   };
 
@@ -213,7 +234,7 @@ const DoctorsManagement = () => {
         </div>
         <button
           className="flex items-center btn mt-4 md:mt-0"
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleAddDoctors}
         >
           <FaPlus className="mr-2" />
           নতুন ডাক্তার যোগ করুন

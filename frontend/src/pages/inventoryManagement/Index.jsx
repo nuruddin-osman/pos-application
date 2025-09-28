@@ -17,6 +17,7 @@ import { useAlert } from "../../components/AlertMessage";
 import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
 import ItemsPerPageSelector from "../../components/ItemsPerPageSelector";
 import PaginationControls from "../../components/PaginationControls";
+import { useNavigate } from "react-router-dom";
 
 const InventoryManagement = () => {
   const [inventory, setInventory] = useState([]);
@@ -51,6 +52,7 @@ const InventoryManagement = () => {
   });
   const { showAlert } = useAlert();
   const BASE_URL = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
 
   // Category list
   const categories = [
@@ -167,22 +169,32 @@ const InventoryManagement = () => {
   };
 
   const handleEdit = (item) => {
-    setFormData(item);
-    setEditingItem(item);
-    setIsModalOpen(true);
+    const token = localStorage.getItem("token");
+    if (token) {
+      setFormData(item);
+      setEditingItem(item);
+      setIsModalOpen(true);
+    } else {
+      navigate("/login");
+    }
   };
 
   const handleDelete = async (id) => {
-    try {
-      const response = await axios.delete(`${BASE_URL}/inventory/${id}`);
-      if (response.data) {
-        showAlert("Success", "This items is deleted", "success");
-      } else {
-        showAlert("Error", "Something is wrong", "error");
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const response = await axios.delete(`${BASE_URL}/inventory/${id}`);
+        if (response.data) {
+          showAlert("Success", "This items is deleted", "success");
+        } else {
+          showAlert("Error", "Something is wrong", "error");
+        }
+        fetchInventory("");
+      } catch (error) {
+        console.log(error);
       }
-      fetchInventory("");
-    } catch (error) {
-      console.log(error);
+    } else {
+      navigate("/login");
     }
   };
 
@@ -230,16 +242,22 @@ const InventoryManagement = () => {
     setShowItemsPerPageDropdown(false);
   };
 
+  const handleAddInventory = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsModalOpen(true);
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
         <h2 className="text-2xl font-bold text-gray-800 font-open-sans mb-4 md:mb-0">
           ইনভেন্টরি ব্যবস্থাপনা
         </h2>
-        <button
-          className="flex items-center btn"
-          onClick={() => setIsModalOpen(true)}
-        >
+        <button className="flex items-center btn" onClick={handleAddInventory}>
           <FaPlus className="mr-2" />
           নতুন আইটেম যোগ করুন
         </button>

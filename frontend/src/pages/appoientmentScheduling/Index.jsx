@@ -16,6 +16,7 @@ import axios from "axios";
 import ItemsPerPageSelector from "../../components/ItemsPerPageSelector";
 import PaginationControls from "../../components/PaginationControls";
 import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
+import { useNavigate } from "react-router-dom";
 
 const AppoientmentScheduling = () => {
   const [appointments, setAppointments] = useState([]);
@@ -48,6 +49,7 @@ const AppoientmentScheduling = () => {
 
   const { showAlert } = useAlert();
   const BASE_URL = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
 
   const fetchAppointments = async ({
     searchTerm = "",
@@ -169,37 +171,47 @@ const AppoientmentScheduling = () => {
   };
 
   const handleEdit = (appointment) => {
-    setFormData({
-      patientId: appointment.patientId?._id || appointment.patientId,
-      doctorId: appointment.doctorId?._id || appointment.doctorId,
-      date: appointment.date
-        ? new Date(appointment.date).toISOString().split("T")[0]
-        : "",
-      time: appointment.time || "",
-      duration: appointment.duration || "30",
-      reason: appointment.reason || "",
-      status: appointment.status || "scheduled",
-      notes: appointment.notes || "",
-    });
-    setEditingAppointment(appointment);
-    setIsModalOpen(true);
+    const token = localStorage.getItem("token");
+    if (token) {
+      setFormData({
+        patientId: appointment.patientId?._id || appointment.patientId,
+        doctorId: appointment.doctorId?._id || appointment.doctorId,
+        date: appointment.date
+          ? new Date(appointment.date).toISOString().split("T")[0]
+          : "",
+        time: appointment.time || "",
+        duration: appointment.duration || "30",
+        reason: appointment.reason || "",
+        status: appointment.status || "scheduled",
+        notes: appointment.notes || "",
+      });
+      setEditingAppointment(appointment);
+      setIsModalOpen(true);
+    } else {
+      navigate("/login");
+    }
   };
 
   const handleDelete = async (id) => {
-    try {
-      const response = await axios.delete(`${BASE_URL}/appointments/${id}`);
-      if (response.data) {
-        showAlert(
-          "Success",
-          "অ্যাপয়েন্টমেন্ট সফলভাবে ডিলিট হয়েছে",
-          "success"
-        );
-        setAppointments((prev) => prev.filter((item) => item._id !== id));
-      } else {
-        showAlert("Error", "Something is wrong", "error");
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const response = await axios.delete(`${BASE_URL}/appointments/${id}`);
+        if (response.data) {
+          showAlert(
+            "Success",
+            "অ্যাপয়েন্টমেন্ট সফলভাবে ডিলিট হয়েছে",
+            "success"
+          );
+          setAppointments((prev) => prev.filter((item) => item._id !== id));
+        } else {
+          showAlert("Error", "Something is wrong", "error");
+        }
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
+    } else {
+      navigate("/login");
     }
   };
 
@@ -240,16 +252,22 @@ const AppoientmentScheduling = () => {
     setShowItemsPerPageDropdown(false);
   };
 
+  const handleAddApointment = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsModalOpen(true);
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 bg-white p-6 rounded-xl shadow-sm">
         <h2 className="text-2xl font-bold text-gray-800 font-open-sans mb-4 md:mb-0">
           অ্যাপয়েন্টমেন্ট সময়সূচী
         </h2>
-        <button
-          className="flex items-center btn"
-          onClick={() => setIsModalOpen(true)}
-        >
+        <button className="flex items-center btn" onClick={handleAddApointment}>
           <FaPlus className="mr-2" />
           নতুন অ্যাপয়েন্টমেন্ট
         </button>
