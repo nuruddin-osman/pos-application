@@ -16,6 +16,7 @@ import {
 import { getItemsPerPageOptions } from "../../components/itemsPerPageOptions";
 import { useAlert } from "../../components/AlertMessage";
 import PaginationControls from "../../components/PaginationControls";
+import { useNavigate } from "react-router-dom";
 
 const PatientManagement = () => {
   const [patients, setPatients] = useState([]);
@@ -25,7 +26,7 @@ const PatientManagement = () => {
   const [editingPatient, setEditingPatient] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(2);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [showItemsPerPageDropdown, setShowItemsPerPageDropdown] =
     useState(false);
 
@@ -40,6 +41,7 @@ const PatientManagement = () => {
     medicalHistory: "",
   });
   const { showAlert } = useAlert();
+  const navigate = useNavigate();
   const BASE_URL = import.meta.env.VITE_API_URL;
 
   // Get patients and serach patients
@@ -120,19 +122,29 @@ const PatientManagement = () => {
   };
 
   const handleEdit = (patient) => {
-    setFormData(patient);
-    setEditingPatient(patient);
-    setIsModalOpen(true);
+    const token = localStorage.getItem("token");
+    if (token) {
+      setFormData(patient);
+      setEditingPatient(patient);
+      setIsModalOpen(true);
+    } else {
+      navigate("/login");
+    }
   };
 
   const handleDelete = async (id) => {
-    const response = await axios.delete(`${BASE_URL}/patients/${id}`);
-    if (response.data) {
-      showAlert("সফল", response.data.message, "success");
+    const token = localStorage.getItem("token");
+    if (token) {
+      const response = await axios.delete(`${BASE_URL}/patients/${id}`);
+      if (response.data) {
+        showAlert("সফল", response.data.message, "success");
+      } else {
+        showAlert("ত্রুটি", response.data.message, "error");
+      }
+      fetchPatients(searchTerm);
     } else {
-      showAlert("ত্রুটি", response.data.message, "error");
+      navigate("/login");
     }
-    fetchPatients(searchTerm);
   };
 
   // Pagination calculation
@@ -154,6 +166,15 @@ const PatientManagement = () => {
     setShowItemsPerPageDropdown(false);
   };
 
+  const handleAddPatient = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsModalOpen(true);
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-inter">
       {/* Items per page selector */}
@@ -162,10 +183,7 @@ const PatientManagement = () => {
         <h2 className="text-2xl font-bold text-gray-800 font-open-sans mb-4 md:mb-0">
           রোগী ব্যবস্থাপনা
         </h2>
-        <button
-          className="flex items-center btn"
-          onClick={() => setIsModalOpen(true)}
-        >
+        <button className="flex items-center btn" onClick={handleAddPatient}>
           <FaPlus className="mr-2" />
           নতুন রোগী যোগ করুন
         </button>

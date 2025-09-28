@@ -89,8 +89,13 @@ const Sidebar = ({ activePage, setActivePage }) => {
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+    } else {
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
   };
 
   return (
