@@ -169,12 +169,12 @@ const Login = ({ placeholder }) => {
             <div className="text-center">
               <p className="text-sm text-gray-600 font-roboto">
                 You have no accounts! Please
-                <a
-                  href="/register"
+                <Link
+                  to="/register"
                   className="font-medium text-blue-600 hover:text-blue-500"
                 >
                   Registration
-                </a>
+                </Link>
               </p>
             </div>
           </form>

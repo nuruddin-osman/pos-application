@@ -281,13 +281,13 @@ const Register = ({ placeholder }) => {
                 className="ml-2 block text-sm text-gray-700 font-roboto"
               >
                 আমি{" "}
-                <a href="#" className="text-blue-600 hover:text-blue-500">
+                <Link to="#" className="text-blue-600 hover:text-blue-500">
                   শর্তাবলী
-                </a>{" "}
+                </Link>{" "}
                 এবং{" "}
-                <a href="#" className="text-blue-600 hover:text-blue-500">
+                <Link to="#" className="text-blue-600 hover:text-blue-500">
                   গোপনীয়তা নীতি
-                </a>{" "}
+                </Link>{" "}
                 মেনে নিচ্ছি
               </label>
             </div>
@@ -311,12 +311,12 @@ const Register = ({ placeholder }) => {
             <div className="text-center">
               <p className="text-sm text-gray-600 font-roboto">
                 ইতিমধ্যে অ্যাকাউন্ট আছে?{" "}
-                <a
-                  href="/login"
+                <Link
+                  to="/login"
                   className="font-medium text-blue-600 hover:text-blue-500"
                 >
                   লগইন করুন
-                </a>
+                </Link>
               </p>
             </div>
           </form>
