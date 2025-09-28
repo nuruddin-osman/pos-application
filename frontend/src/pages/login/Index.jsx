@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { useEffect } from "react";
 
 const Login = ({ placeholder }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,13 +33,35 @@ const Login = ({ placeholder }) => {
       if (response.data) {
         const tokens = response.data.token;
         localStorage.setItem("token", tokens);
+        navigate("/");
         console.log(response.data);
         console.log("success");
+      } else {
+        console.log("Login error");
+        navigate("/login");
       }
     } catch (error) {
       console.log(error);
     }
   };
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    axios
+      .get(`http://localhost:4000/api/profile`, {
+        headers: {
+          Authorization: token,
+        },
+      })
+      .then((res) => {
+        navigate("/");
+        console.log(res);
+      })
+      .catch((err) => {
+        navigate("/login");
+        console.log(err);
+      });
+  }, []);
 
   return (
     <>
@@ -54,7 +77,7 @@ const Login = ({ placeholder }) => {
           {/* Registration Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
             {/* Email */}
-            <div className="space-y-2  w-full md:w-1/2">
+            <div className="space-y-2">
               <label
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 font-open-sans"

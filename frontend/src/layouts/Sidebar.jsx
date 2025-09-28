@@ -13,10 +13,13 @@ import {
 } from "react-icons/fa";
 import { FaUserDoctor } from "react-icons/fa6";
 import Avater from "../assets/image/logo/avater.png";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Sidebar = ({ activePage, setActivePage }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   const menuItems = [
     {
@@ -73,10 +76,21 @@ const Sidebar = ({ activePage, setActivePage }) => {
   };
 
   const handleAdminProfileClick = () => {
-    setActivePage("অ্যাডমিন প্রোফাইল");
+    const token = localStorage.getItem("token");
+    if (token) {
+      setActivePage("অ্যাডমিন প্রোফাইল");
+    } else {
+      navigate("/login");
+    }
+
     if (window.innerWidth < 768) {
       setIsMobileSidebarOpen(false);
     }
+  };
+
+  const handleLogout = async () => {
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
@@ -191,6 +205,7 @@ const Sidebar = ({ activePage, setActivePage }) => {
 
           {/* Logout button */}
           <button
+            onClick={handleLogout}
             className={`w-full flex items-center p-3 mt-4 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white ${
               !isSidebarOpen && "justify-center"
             }`}

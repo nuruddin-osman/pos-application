@@ -9,13 +9,11 @@ import AdminProfile from "../pages/admin-pannel/Index";
 import Logo from "../assets/image/logo/logo.webp";
 import Avater from "../assets/image/logo/avater.png";
 import DoctorsManagement from "../pages/doctors/Index";
+import { useNavigate } from "react-router-dom";
 
 const RootLayout = () => {
   const [activePage, setActivePage] = useState("রোগী ব্যবস্থাপনা");
-
-  const handleAdminProfileClick = () => {
-    setActivePage("অ্যাডমিন প্রোফাইল");
-  };
+  const navigate = useNavigate();
 
   const renderPage = () => {
     switch (activePage) {
@@ -38,9 +36,19 @@ const RootLayout = () => {
     }
   };
 
+  const handleAdminProfileClick = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setActivePage("অ্যাডমিন প্রোফাইল");
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-100 font-roboto">
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
+
       <main className="flex-1 overflow-y-auto md:ml-0">
         <div className="md:px-6 md:pt-2">
           <div className="flex justify-end md:justify-between items-start md:items-center mb-6 bg-gradient-to-r from-purple-600 to-green-600 shadow-xl px-6 py-3 rounded-xl ">
@@ -70,6 +78,7 @@ const RootLayout = () => {
               </h2>
             </div>
           </div>
+
           {renderPage()}
         </div>
       </main>
