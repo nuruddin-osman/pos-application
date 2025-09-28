@@ -40,6 +40,7 @@ const Register = ({ placeholder }) => {
       if (response.data) {
         console.log(response.data);
         console.log("success");
+        navigate("/login");
       }
     } catch (error) {
       console.log(error);
@@ -311,7 +312,7 @@ const Register = ({ placeholder }) => {
               <p className="text-sm text-gray-600 font-roboto">
                 ইতিমধ্যে অ্যাকাউন্ট আছে?{" "}
                 <a
-                  href="#"
+                  href="/login"
                   className="font-medium text-blue-600 hover:text-blue-500"
                 >
                   লগইন করুন
