@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import axios from "axios";
 import {
   FaUser,
   FaPhone,
@@ -31,8 +32,18 @@ const Register = ({ placeholder }) => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    const newData = data;
-    console.log(newData);
+    try {
+      const response = await axios.post(
+        `http://localhost:4000/api/register`,
+        data
+      );
+      if (response.data) {
+        console.log(response.data);
+        console.log("success");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
