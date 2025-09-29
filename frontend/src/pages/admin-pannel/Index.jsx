@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
+import axios from "axios";
 import {
   FaUser,
   FaEnvelope,
@@ -21,6 +23,7 @@ import {
 const AdminProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
+  const [userData, setUserData] = useState("");
   const [adminData, setAdminData] = useState({
     name: "ডাঃ আহমেদ হাসান",
     email: "ahmed.hasan@hospital.com",
@@ -33,6 +36,28 @@ const AdminProfile = () => {
     emergencyContact: "+8801912345678",
     dateOfBirth: "১৯৮৫-০৬-২০",
   });
+  console.log(userData);
+
+  const fetchUser = async () => {
+    try {
+      const loginUserId = localStorage.getItem("loginUserId");
+      const response = await axios.get(
+        `http://localhost:4000/api/user/${loginUserId}`
+      );
+      if (response.data) {
+        setUserData(response.data.user);
+        console.log(response.data);
+      } else {
+        console.log("User is not found");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const [formData, setFormData] = useState({ ...adminData });
 
@@ -319,7 +344,7 @@ const AdminProfile = () => {
               </button>
             </div>
             <h2 className="text-xl font-bold text-gray-800 text-center font-open-sans">
-              {adminData.name}
+              {userData.fullName}
             </h2>
             <p className="text-gray-600 text-center font-roboto">
               {adminData.position}

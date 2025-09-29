@@ -32,7 +32,11 @@ const Login = ({ placeholder }) => {
       );
       if (response.data) {
         const tokens = response.data.token;
+        const loginUserId = response.data.user._id;
+
         localStorage.setItem("token", tokens);
+        localStorage.setItem("loginUserId", loginUserId);
+
         navigate("/");
         console.log(response.data);
         console.log("success");
